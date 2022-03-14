@@ -1,0 +1,24 @@
+[submodule "lib/twinThingRP2040W5x00"]
+	path = lib/twinThingRP2040W5x00
+	url = https://github.com/jondurrant/twinThingRP2040W5x00
+[submodule "lib/ioLibrary_Driver"]
+	path = lib/ioLibrary_Driver
+	url = https://github.com/Wiznet/ioLibrary_Driver
+[submodule "lib/RtosComponents"]
+	path = lib/RtosComponents
+	url = https://github.com/jondurrant/RtosComponents
+[submodule "lib/FreeRTOS-Kernel"]
+	path = lib/FreeRTOS-Kernel
+	url = https://github.com/FreeRTOS/FreeRTOS-Kernel
+[submodule "lib/json-maker"]
+	path = lib/json-maker
+	url = https://github.com/rafagafe/json-maker
+[submodule "lib/tiny-json"]
+	path = lib/tiny-json
+	url = https://github.com/rafagafe/tiny-json
+[submodule "lib/coreMQTT-Agent"]
+	path = lib/coreMQTT-Agent
+	url = https://github.com/FreeRTOS/coreMQTT-Agent
+[submodule "lib/coreMQTT"]
+	path = lib/coreMQTT
+	url = https://github.com/FreeRTOS/coreMQTT
