@@ -11,7 +11,7 @@ if (len(sys.argv) != 3):
 
 
 targetId = sys.argv[1]
-speed = int(sys.argv[2])
+day = int(sys.argv[2])
 
 user=os.environ.get("MQTT_USER")
 passwd=os.environ.get("MQTT_PASSWD")
@@ -63,9 +63,7 @@ client.publish(connected_topic,p,retain=False,qos=1)
 
 
 j = {'state':{
-        'cSpeed': speed,
-        'on': True,
-        'maxSpeed': 50
+        'day': (day == 0)
     }
     }
 p = json.dumps(j)

@@ -41,6 +41,10 @@ void FanController::notifyState(uint16_t dirtyCode){
 		if (speed == 0){
 			s = 0;
 		}
+
+		if (!pState->getOn()){
+			s = 0;
+		}
 		pwm_set_gpio_level	(xPin, s);
 	}
 }

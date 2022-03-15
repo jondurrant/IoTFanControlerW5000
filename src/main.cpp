@@ -263,6 +263,8 @@ init_thread(void* pvParameters) {
     	if (count % 10 == 0){
 			rtc_get_datetime (&xDate);
 			printf("RTC: %d-%d-%d, %d:%d:%d\n", xDate.year, xDate.month, xDate.day, xDate.hour, xDate.min, xDate.sec);
+
+			state.updateClock();
     	}
     }
 }

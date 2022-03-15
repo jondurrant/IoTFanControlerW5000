@@ -22,7 +22,7 @@
  * State will have 4 element two from StateTemperature and two added here
  */
 FanState::FanState() {
-	elements=9;
+	elements=12;
 
 	jsonHelpers[FAN_ON_SLOT] = (StateFunc)&FanState::jsonOn;
 	jsonHelpers[FAN_DAY_END_SLOT] = (StateFunc)&FanState::jsonDayEnd;
@@ -30,7 +30,12 @@ FanState::FanState() {
 	jsonHelpers[FAN_DAY_SLOT] = (StateFunc)&FanState::jsonDay;
 	jsonHelpers[FAN_CLOCK_SLOT] = (StateFunc)&FanState::jsonClock;
 	jsonHelpers[FAN_CSPEED_SLOT] = (StateFunc)&FanState::jsonCSpeed;
+	jsonHelpers[FAN_MAX_NIGHT_SLOT] = (StateFunc)&FanState::jsonMSpeed;
+	jsonHelpers[FAN_PRE_TEMP_SLOT] = (StateFunc)&FanState::jsonPreTemp;
+	jsonHelpers[FAN_PRE_SPEED_SLOT] = (StateFunc)&FanState::jsonPreSpeed;
 
+	memset(xPreTemp,  0, FAN_PRESETS);
+	memset(xPreSpeed, 0, FAN_PRESETS);
 }
 
 /***
@@ -39,6 +44,34 @@ FanState::FanState() {
 FanState::~FanState() {
 	// TODO Auto-generated destructor stub
 }
+
+/***
+ * calculate Speed
+ * @return
+ */
+void FanState::calcSpeed(){
+
+	float t = getTemp();
+	uint8_t speed = 0;
+
+	if (t < getPreTemp()[0]){
+		setCurrentSpeed(speed);
+		return;
+	}
+
+	speed = 100;
+	for (int8_t i = FAN_PRESETS - 1; i >= 0; i--){
+		if (t >= getPreTemp()[i]){
+			setCurrentSpeed(speed);
+			return;
+		}
+		speed = getPreSpeed()[i];
+	}
+	setCurrentSpeed(speed);
+}
+
+
+
 
 
 
@@ -118,6 +151,14 @@ void FanState::setDay(bool xDay) {
  * @return %0-100
  */
 uint8_t FanState::getCurrentSpeed(){
+	if (!getOn()){
+		setCurrentSpeed(0);
+	}
+	if (! isDay()){
+		if (xCSpeed > getMaxNightSpeed()){
+			setCurrentSpeed(getMaxNightSpeed());
+		}
+	}
 	return xCSpeed;
 }
 
@@ -133,13 +174,53 @@ void FanState::setCurrentSpeed(uint8_t percent){
 	}
 }
 
+/***
+ * Get Max Night Speed
+ * @return %0-100
+ */
+uint8_t FanState::getMaxNightSpeed(){
+	return xMSpeed;
+}
+
+
+/***
+ * Set Max Night Speed
+ * @param percent - 0 to 100
+ */
+void FanState::setMaxNightSpeed(uint8_t percent){
+	if (percent <= 100){
+		xMSpeed = percent;
+		setDirty(FAN_MAX_NIGHT_SLOT);
+	}
+}
+
+
+const uint8_t * FanState::getPreTemp() const{
+	return xPreTemp;
+}
+
+void FanState::setPreTemp(uint8_t* temps){
+	memcpy(xPreTemp, temps, FAN_PRESETS);
+}
+
+const uint8_t * FanState::getPreSpeed() const{
+	return xPreSpeed;
+}
+
+void FanState::setPreSpeed(uint8_t* speeds){
+	memcpy(xPreSpeed, speeds, FAN_PRESETS);
+}
+
+
 
 
 /***
 * Update time and temp and trigger state update
 */
 void FanState::updateClock(){
+	calcSpeed();
 	setDirty(FAN_CLOCK_SLOT);
+	setDirty(FAN_CSPEED_SLOT);
 	updateTemp();
 }
 
@@ -235,6 +316,51 @@ char* FanState::jsonCSpeed(char *buf, unsigned int len){
 	return p;
 }
 
+/***
+* Retried Max Night Speed in JSON format
+* @param buf
+* @param len
+* @return
+*/
+char* FanState::jsonMSpeed(char *buf, unsigned int len){
+	char *p = buf;
+	p = json_uint( p, "maxSpeed", getMaxNightSpeed(), &len);
+	return p;
+}
+
+
+/***
+ * Retried Preset Temp in JSON format
+ * @param buf
+ * @param len
+ * @return
+ */
+char* FanState::jsonPreTemp(char *buf, unsigned int len){
+	char *p = buf;
+	p = json_arrOpen( p, "preTemp", &len);
+	for (unsigned char i=0; i < FAN_PRESETS; i++){
+		p = json_uint( p, NULL, getPreTemp()[i], &len );
+	}
+	p = json_arrClose( p, &len);
+	return p;
+}
+
+/***
+ * Retried Preset Speed in JSON format
+ * @param buf
+ * @param len
+ * @return
+ */
+char* FanState::jsonPreSpeed(char *buf, unsigned int len){
+	char *p = buf;
+	p = json_arrOpen( p, "preSpeed", &len);
+	for (unsigned char i=0; i < FAN_PRESETS; i++){
+		p = json_uint( p, NULL, getPreSpeed()[i], &len );
+	}
+	p = json_arrClose( p, &len);
+	return p;
+}
+
 
 
 /***
@@ -245,6 +371,9 @@ void FanState::updateFromJson(json_t const *json){
 	StateTemp::updateFromJson(json);
 
 	json_t const *jp;
+	uint8_t presets[FAN_PRESETS];
+	bool presetsOk = true;
+	memset(presets, 0, FAN_PRESETS);
 
 	jp = json_getProperty(json, "on");
 	if (jp){
@@ -282,6 +411,68 @@ void FanState::updateFromJson(json_t const *json){
 		}
 	}
 
+	jp = json_getProperty(json, "maxSpeed");
+	if (jp){
+		if (JSON_INTEGER == json_getType(jp)){
+			setMaxNightSpeed(json_getInteger(jp));
+		}
+	}
+
+	jp = json_getProperty(json, "preTemp");
+	if (jp){
+		if (JSON_ARRAY == json_getType(jp)){
+			jp = json_getChild(jp);
+			for (unsigned char i=0; i < FAN_PRESETS; i++){
+				if (jp){
+					if (JSON_INTEGER == json_getType(jp)){
+						int j = json_getInteger(jp);
+						if ((j >= 0) && (j <= 0xFF)){
+							presets[i] = (uint8_t) j;
+						} else {
+							presetsOk = false;
+						}
+					}
+					else {
+						presetsOk = false;
+					}
+				} else {
+					presetsOk = false;
+				}
+				jp = json_getSibling(jp);
+			}
+			if (presetsOk){
+				setPreTemp(presets);
+			}
+		}
+	}
+
+	jp = json_getProperty(json, "preSpeed");
+	if (jp){
+		if (JSON_ARRAY == json_getType(jp)){
+			jp = json_getChild(jp);
+			for (unsigned char i=0; i < FAN_PRESETS; i++){
+				if (jp){
+					if (JSON_INTEGER == json_getType(jp)){
+						int j = json_getInteger(jp);
+						if ((j >= 0) && (j <= 0xFF)){
+							presets[i] = (uint8_t) j;
+						} else {
+							presetsOk = false;
+						}
+					}
+					else {
+						presetsOk = false;
+					}
+				} else {
+					presetsOk = false;
+				}
+				jp = json_getSibling(jp);
+			}
+			if (presetsOk){
+				setPreSpeed(presets);
+			}
+		}
+	}
 }
 
 /***
@@ -294,3 +485,6 @@ unsigned int FanState::state(char *buf, unsigned int len){
 	updateTemp();
 	return StateTemp::state(buf, len);
 }
+
+
+

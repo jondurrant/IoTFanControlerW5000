@@ -5,13 +5,12 @@ import sys
 import os
 
 
-if (len(sys.argv) != 3):
+if (len(sys.argv) != 2):
     print("Require target ID as parater")
     sys.exit()
 
 
 targetId = sys.argv[1]
-speed = int(sys.argv[2])
 
 user=os.environ.get("MQTT_USER")
 passwd=os.environ.get("MQTT_PASSWD")
@@ -63,9 +62,8 @@ client.publish(connected_topic,p,retain=False,qos=1)
 
 
 j = {'state':{
-        'cSpeed': speed,
-        'on': True,
-        'maxSpeed': 50
+        'preTemp': [27, 28, 29],
+        'preSpeed': [10, 60, 100]
     }
     }
 p = json.dumps(j)

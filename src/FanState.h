@@ -21,7 +21,11 @@
 #define FAN_DAY_SLOT 		6
 #define FAN_CLOCK_SLOT		7
 #define FAN_CSPEED_SLOT		8
+#define FAN_MAX_NIGHT_SLOT	9
+#define FAN_PRE_TEMP_SLOT	10
+#define FAN_PRE_SPEED_SLOT	11
 
+#define FAN_PRESETS 3
 
 /***
  * State include temperate, Fan Speed
@@ -30,6 +34,12 @@ class FanState: public StateTemp {
 public:
 	FanState();
 	virtual ~FanState();
+
+	/***
+	 * calculate Speed
+	 * @return
+	 */
+	void calcSpeed();
 
 	/***
 	 * Gets the On status of the light
@@ -88,6 +98,16 @@ public:
 	uint8_t getCurrentSpeed();
 
 	void setCurrentSpeed(uint8_t percent);
+
+	uint8_t getMaxNightSpeed();
+
+	void setMaxNightSpeed(uint8_t percent);
+
+	const uint8_t * getPreTemp() const;
+	void setPreTemp(uint8_t* temps);
+
+	const uint8_t * getPreSpeed() const;
+	void setPreSpeed(uint8_t* speeds);
 
 
 	/***
@@ -154,6 +174,30 @@ protected:
 	 */
 	char* jsonCSpeed(char *buf, unsigned int len);
 
+	/***
+	 * Retried Max Night Speed in JSON format
+	 * @param buf
+	 * @param len
+	 * @return
+	 */
+	char* jsonMSpeed(char *buf, unsigned int len);
+
+	/***
+	 * Retried Preset Temp in JSON format
+	 * @param buf
+	 * @param len
+	 * @return
+	 */
+	char* jsonPreTemp(char *buf, unsigned int len);
+
+	/***
+	 * Retried Preset Speed in JSON format
+	 * @param buf
+	 * @param len
+	 * @return
+	 */
+	char* jsonPreSpeed(char *buf, unsigned int len);
+
 private:
 	//Is Fan on
 	bool xOn = false;
@@ -165,6 +209,11 @@ private:
 
 	//Fan Speed
 	uint8_t xCSpeed = 0;
+	uint8_t xMSpeed = 100;
+
+	//Presets
+	uint8_t xPreTemp[FAN_PRESETS];
+	uint8_t xPreSpeed[FAN_PRESETS];
 
 };
 
