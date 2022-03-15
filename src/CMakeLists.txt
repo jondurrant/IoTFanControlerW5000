@@ -5,6 +5,7 @@ add_executable(${NAME}
 		ExampleAgentObserver.cpp
 		StateExample.cpp
 		FanState.cpp
+		RGBLEDMgr.cpp
 #		EthHelper.cpp
 #		TCPTransport.cpp
 #		MQTTAgent.cpp

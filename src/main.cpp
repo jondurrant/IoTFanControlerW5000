@@ -36,6 +36,7 @@ extern "C" {
 
 //JD Specials
 #include <WatchdogBlinkAgent.h>
+#include <RGBLEDAgent.h>
 
 //TwinThing
 #include "EthHelper.h"
@@ -48,6 +49,7 @@ extern "C" {
 #include "StateExample.h"
 #include "ExampleAgentObserver.h"
 #include "FanState.h"
+#include "RGBLEDMgr.h"
 
 
 /**
@@ -147,6 +149,9 @@ ExampleAgentObserver agentObs;
 TwinTask xTwin;
 MQTTPingTask xPing;
 
+RGBLEDAgent ledAgent = RGBLEDAgent(5,3,2);
+RGBLEDMgr   ledMgr = RGBLEDMgr(&ledAgent);
+
 
 
 /**
@@ -185,11 +190,12 @@ void doMQTT(){
 	mqttRouter.setPingTask(&xPing);
 
 	//Setup and start the mqttAgent
-	mqttAgent.setObserver(&agentObs);
+	//mqttAgent.setObserver(&agentObs);
+	mqttAgent.setObserver(&ledMgr);
 	mqttAgent.setRouter(&mqttRouter);
 
 	mqttAgent.connect("piudev2.local.jondurrant.com", 3881, true, false);
-	mqttAgent.start(tskIDLE_PRIORITY+1);//DHCP_TASK_PRIORITY);
+	mqttAgent.start(tskIDLE_PRIORITY+2);//DHCP_TASK_PRIORITY);
 }
 
 
@@ -207,8 +213,12 @@ init_thread(void* pvParameters) {
 	WatchdogBlinkAgent watchdog;
 	watchdog.start(tskIDLE_PRIORITY+1);
 
+	ledAgent.start(tskIDLE_PRIORITY+1);
+	ledAgent.set(RGBModeOn,0xFF,0x0,0x0);
+
 
 	gEth.dhcpClient();
+	ledAgent.set(RGBModeOn,0xFF,0xCE,0x42);
 
 	retval=gEth.syncRTCwithSNTP(sntpSvr);
 	printf("SNTP IP: %s\n", retval?"Ok":"Fail");
@@ -222,7 +232,9 @@ init_thread(void* pvParameters) {
 
     	if (!gEth.isJoined()){
     		//mqttAgent.stop();
+    		ledAgent.set(RGBModeOn,0xFF,0x0,0x0);
     		gEth.dhcpClient();
+    		ledAgent.set(RGBModeOn,0xFF,0xCE,0x42);
     		//mqttAgent.start(tskIDLE_PRIORITY+1);//DHCP_TASK_PRIORITY);
     	} else {
 
