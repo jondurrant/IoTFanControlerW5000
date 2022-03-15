@@ -50,6 +50,7 @@ extern "C" {
 #include "ExampleAgentObserver.h"
 #include "FanState.h"
 #include "RGBLEDMgr.h"
+#include "FanController.h"
 
 
 /**
@@ -145,6 +146,8 @@ MQTTRouterTwin mqttRouter;
 //MQTTRouterPing mqttRouter;
 //StateExample state;
 FanState state;
+FanController fanControl = FanController(&state, 0);
+
 ExampleAgentObserver agentObs;
 TwinTask xTwin;
 MQTTPingTask xPing;

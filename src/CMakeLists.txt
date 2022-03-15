@@ -6,6 +6,7 @@ add_executable(${NAME}
 		StateExample.cpp
 		FanState.cpp
 		RGBLEDMgr.cpp
+		FanController.cpp
 #		EthHelper.cpp
 #		TCPTransport.cpp
 #		MQTTAgent.cpp
