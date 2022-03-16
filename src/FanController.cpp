@@ -8,9 +8,10 @@
 #include "FanController.h"
 #include "hardware/pwm.h"
 
-FanController::FanController(FanState *state, uint8_t gp) {
+FanController::FanController(FanState *state, DisplayAgent *d, uint8_t gp) {
 	xPin = gp;
 	pState = state;
+	pDispAgent = d;
 
 	pState->attach(this);
 
@@ -46,5 +47,10 @@ void FanController::notifyState(uint16_t dirtyCode){
 			s = 0;
 		}
 		pwm_set_gpio_level	(xPin, s);
+
+		if (pDispAgent != NULL){
+			float f = pState->getTemp();
+			pDispAgent->showTemp(f, speed);
+		}
 	}
 }

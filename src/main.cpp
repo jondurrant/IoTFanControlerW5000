@@ -37,6 +37,7 @@ extern "C" {
 //JD Specials
 #include <WatchdogBlinkAgent.h>
 #include <RGBLEDAgent.h>
+#include "OledDisplay.h"
 
 //TwinThing
 #include "EthHelper.h"
@@ -51,6 +52,7 @@ extern "C" {
 #include "FanState.h"
 #include "RGBLEDMgr.h"
 #include "FanController.h"
+#include "DisplayAgent.h"
 
 
 /**
@@ -146,7 +148,7 @@ MQTTRouterTwin mqttRouter;
 //MQTTRouterPing mqttRouter;
 //StateExample state;
 FanState state;
-FanController fanControl = FanController(&state, 0);
+
 
 ExampleAgentObserver agentObs;
 TwinTask xTwin;
@@ -155,7 +157,10 @@ MQTTPingTask xPing;
 RGBLEDAgent ledAgent = RGBLEDAgent(5,3,2);
 RGBLEDMgr   ledMgr = RGBLEDMgr(&ledAgent);
 
+OledDisplay display = OledDisplay(14, 15);
+DisplayAgent dispAgent = DisplayAgent(&display);
 
+FanController fanControl = FanController(&state, &dispAgent, 0);
 
 /**
  * ----------------------------------------------------------------------------------------------------
@@ -219,12 +224,17 @@ init_thread(void* pvParameters) {
 	ledAgent.start(tskIDLE_PRIORITY+1);
 	ledAgent.set(RGBModeOn,0xFF,0x0,0x0);
 
+	dispAgent.start(tskIDLE_PRIORITY+1);
+
 
 	gEth.dhcpClient();
+	gEth.getIPAddress(ip);
+	dispAgent.showIP(ip);
 	ledAgent.set(RGBModeOn,0xFF,0xCE,0x42);
 
-	retval=gEth.syncRTCwithSNTP(sntpSvr);
-	printf("SNTP IP: %s\n", retval?"Ok":"Fail");
+	//retval=gEth.syncRTCwithSNTP(sntpSvr);
+	retval = gEth.syncRTCwithSNTP(sntpHosts, 5);
+	printf("SNTP Res: %s\n", retval?"Ok":"Fail");
 
 	doMQTT();
 
@@ -235,9 +245,12 @@ init_thread(void* pvParameters) {
 
     	if (!gEth.isJoined()){
     		//mqttAgent.stop();
+    		dispAgent.noIP();
     		ledAgent.set(RGBModeOn,0xFF,0x0,0x0);
     		gEth.dhcpClient();
     		ledAgent.set(RGBModeOn,0xFF,0xCE,0x42);
+    		gEth.getIPAddress(ip);
+    		dispAgent.showIP(ip);
     		//mqttAgent.start(tskIDLE_PRIORITY+1);//DHCP_TASK_PRIORITY);
     	} else {
 
@@ -249,6 +262,7 @@ init_thread(void* pvParameters) {
 					printf(" Target domain : %s\n", mqttTarget);
 					printf(" IP of target domain : %d.%d.%d.%d\n", ip[0], ip[1], ip[2], ip[3]);
 					printf("-----------------------------------\n");
+
 				} else {
 					printf("DNS Failed\n");
 				}
@@ -287,6 +301,8 @@ int main()
     	sleep_ms(5000);
 
     }
+
+    display.displayString("Hello");
 
     gEth.init(g_ethernet_buf);
 

@@ -15,6 +15,7 @@
 #include "json-maker/json-maker.h"
 
 #include "hardware/rtc.h"
+#include <MQTTConfig.h>
 
 
 
@@ -56,6 +57,7 @@ void FanState::calcSpeed(){
 
 	if (t < getPreTemp()[0]){
 		setCurrentSpeed(speed);
+		LogDebug(("Setting %d speed for %fC",speed, t));
 		return;
 	}
 
@@ -63,10 +65,14 @@ void FanState::calcSpeed(){
 	for (int8_t i = FAN_PRESETS - 1; i >= 0; i--){
 		if (t >= getPreTemp()[i]){
 			setCurrentSpeed(speed);
+			LogDebug(("Setting %d speed for %fC",speed, t));
 			return;
 		}
 		speed = getPreSpeed()[i];
 	}
+
+
+	LogDebug(("Setting %d speed for %fC",speed, t));
 	setCurrentSpeed(speed);
 }
 
@@ -218,10 +224,9 @@ void FanState::setPreSpeed(uint8_t* speeds){
 * Update time and temp and trigger state update
 */
 void FanState::updateClock(){
-	calcSpeed();
 	setDirty(FAN_CLOCK_SLOT);
-	setDirty(FAN_CSPEED_SLOT);
 	updateTemp();
+	calcSpeed();
 }
 
 

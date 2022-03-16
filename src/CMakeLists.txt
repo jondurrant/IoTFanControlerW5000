@@ -7,6 +7,8 @@ add_executable(${NAME}
 		FanState.cpp
 		RGBLEDMgr.cpp
 		FanController.cpp
+		OledDisplay.cpp
+		DisplayAgent.cpp
 #		EthHelper.cpp
 #		TCPTransport.cpp
 #		MQTTAgent.cpp
@@ -17,6 +19,8 @@ target_link_libraries(${NAME}
 	pico_stdlib 
 	hardware_spi
 	hardware_dma
+	hardware_i2c
+	pico_ssd1306
 	ETHERNET_FILES
 #	SPI_FILES
 	DHCP_FILES

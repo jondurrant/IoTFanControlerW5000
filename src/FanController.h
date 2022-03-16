@@ -11,10 +11,11 @@
 #include <StateObserver.h>
 #include "FanState.h"
 #include "stdint.h"
+#include "DisplayAgent.h"
 
 class FanController : public StateObserver{
 public:
-	FanController(FanState *state, uint8_t gp=0);
+	FanController(FanState *state, DisplayAgent *d, uint8_t gp=0);
 	virtual ~FanController();
 
 	/***
@@ -26,6 +27,7 @@ public:
 private:
 	uint8_t    xPin   = 0;
 	FanState * pState = NULL;
+	DisplayAgent *pDispAgent = NULL;
 
 
 };

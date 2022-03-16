@@ -22,3 +22,6 @@
 [submodule "lib/coreMQTT"]
 	path = lib/coreMQTT
 	url = https://github.com/FreeRTOS/coreMQTT
+[submodule "lib/pico-ssd1306"]
+	path = lib/pico-ssd1306
+	url = https://github.com/daschr/pico-ssd1306

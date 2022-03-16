@@ -70,7 +70,7 @@ include("lib/RtosComponents/RTOSComponents.cmake")
 
 include("lib/ioLibrary.cmake")
 
-
+include("lib/pico-ssd1306.cmake")
 
 
 
