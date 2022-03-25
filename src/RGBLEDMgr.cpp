@@ -18,29 +18,39 @@ RGBLEDMgr::~RGBLEDMgr() {
 }
 
 void RGBLEDMgr::MQTTOffline(){
+	if (pLed != NULL){
 
-	pLed->set(RGBModeOn, 0xF5, 0xCE, 0x42);
+		if (!pLed->set(RGBModeOn, 0xF5, 0xCE, 0x42)){
+			LogError(("Set failed"));
+		}
+	}
 
 	LogDebug(("Offline"));
 }
 
 void RGBLEDMgr::MQTTOnline(){
 	if (pLed != NULL){
-		pLed->set(RGBModeOn,0, 0, 0xFF);
+		if (pLed->set(RGBModeOn,0, 0, 0xFF)){
+			LogError(("Set failed"));
+		}
 	}
 	LogDebug(("Online"));
 }
 
 void RGBLEDMgr::MQTTSend(){
 	if (pLed != NULL){
-		pLed->set(RGBModeOnce,0, 0, 0xFF);
+		if(!pLed->set(RGBModeOnce,0, 0, 0xFF)){
+			LogError(("Set failed"));
+		}
 	}
 	LogDebug(("Send"));
 }
 
 void RGBLEDMgr::MQTTRecv(){
 	if (pLed != NULL){
-		pLed->set(RGBModeOnce,0, 0, 0xFF);
+		if(!pLed->set(RGBModeOnce,0, 0, 0xFF)){
+			LogError(("Set failed"));
+		}
 	}
 	LogDebug(("Recv"));
 }

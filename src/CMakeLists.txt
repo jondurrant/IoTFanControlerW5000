@@ -37,6 +37,7 @@ target_link_libraries(${NAME}
 	IOLIBRARY_FILES
 	coreMQTT 
 	coreMQTTAgent
+	ds20b18pio
 )
 
 # enable usb output, disable uart output

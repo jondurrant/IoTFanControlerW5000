@@ -16,6 +16,7 @@
 
 #include "hardware/rtc.h"
 #include <MQTTConfig.h>
+#include <math.h>
 
 
 
@@ -34,9 +35,13 @@ FanState::FanState() {
 	jsonHelpers[FAN_MAX_NIGHT_SLOT] = (StateFunc)&FanState::jsonMSpeed;
 	jsonHelpers[FAN_PRE_TEMP_SLOT] = (StateFunc)&FanState::jsonPreTemp;
 	jsonHelpers[FAN_PRE_SPEED_SLOT] = (StateFunc)&FanState::jsonPreSpeed;
+	jsonHelpers[FAN_ENV_TEMP_SLOT] = (StateFunc)&FanState::jsonEnvTemp;
 
 	memset(xPreTemp,  0, FAN_PRESETS);
 	memset(xPreSpeed, 0, FAN_PRESETS);
+
+	xDS18B20.DS18Initalize(pio0, 13);
+	xDS18B20.convert();
 }
 
 /***
@@ -52,7 +57,8 @@ FanState::~FanState() {
  */
 void FanState::calcSpeed(){
 
-	float t = getTemp();
+	//float t = getTemp();
+	float t = getEnvTemp();
 	uint8_t speed = 0;
 
 	if (t < getPreTemp()[0]){
@@ -218,6 +224,25 @@ void FanState::setPreSpeed(uint8_t* speeds){
 }
 
 
+/***
+ * Set temp in celsius
+ * @param temp
+ */
+void FanState::setEnvTemp(float temp){
+	xEnvTemp = temp;
+	setDirty(FAN_ENV_TEMP_SLOT);
+}
+
+
+/***
+ * Get Environment Temperature
+ * @return celsius
+ */
+float FanState::getEnvTemp(){
+	return xEnvTemp;
+}
+
+
 
 
 /***
@@ -227,6 +252,9 @@ void FanState::updateClock(){
 	setDirty(FAN_CLOCK_SLOT);
 	updateTemp();
 	calcSpeed();
+
+	setEnvTemp(xDS18B20.getTemperature());
+	xDS18B20.convert();
 }
 
 
@@ -363,6 +391,18 @@ char* FanState::jsonPreSpeed(char *buf, unsigned int len){
 		p = json_uint( p, NULL, getPreSpeed()[i], &len );
 	}
 	p = json_arrClose( p, &len);
+	return p;
+}
+
+/***
+* Retried Preset Speed in JSON format
+* @param buf
+* @param len
+* @return
+*/
+char* FanState::jsonEnvTemp(char *buf, unsigned int len){
+	char *p = buf;
+	p = json_double( p, "envTemp", getEnvTemp(), &len);
 	return p;
 }
 

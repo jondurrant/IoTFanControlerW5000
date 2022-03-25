@@ -72,6 +72,8 @@ include("lib/ioLibrary.cmake")
 
 include("lib/pico-ssd1306.cmake")
 
+include("lib/RP2040PIO-DS18B20/DS18B20pio.cmake")
+
 
 
 

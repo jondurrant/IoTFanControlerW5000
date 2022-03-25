@@ -25,3 +25,6 @@
 [submodule "lib/pico-ssd1306"]
 	path = lib/pico-ssd1306
 	url = https://github.com/daschr/pico-ssd1306
+[submodule "lib/RP2040PIO-DS18B20"]
+	path = lib/RP2040PIO-DS18B20
+	url = https://github.com/jondurrant/RP2040PIO-DS18B20

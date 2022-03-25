@@ -14,6 +14,7 @@
 #include "StateTemp.h"
 #include <stdbool.h>
 #include <stdint.h>
+#include <DS18B20.h>
 
 #define FAN_ON_SLOT 		3
 #define FAN_DAY_END_SLOT 	4
@@ -24,6 +25,7 @@
 #define FAN_MAX_NIGHT_SLOT	9
 #define FAN_PRE_TEMP_SLOT	10
 #define FAN_PRE_SPEED_SLOT	11
+#define FAN_ENV_TEMP_SLOT	11
 
 #define FAN_PRESETS 3
 
@@ -88,6 +90,20 @@ public:
 	 * @param xDay
 	 */
 	void setDay(bool xDay = true) ;
+
+
+	/***
+	 * Get Environment Temperature
+	 * @return celsius
+	 */
+	float getEnvTemp();
+
+
+	/***
+	 * Set temp in celsius
+	 * @param temp
+	 */
+	void setEnvTemp(float temp);
 
 	/***
 	 * Update time and temp and trigger state update
@@ -198,6 +214,14 @@ protected:
 	 */
 	char* jsonPreSpeed(char *buf, unsigned int len);
 
+	/***
+	 * Retried Preset Speed in JSON format
+	 * @param buf
+	 * @param len
+	 * @return
+	 */
+	char* jsonEnvTemp(char *buf, unsigned int len);
+
 private:
 	//Is Fan on
 	bool xOn = false;
@@ -214,6 +238,11 @@ private:
 	//Presets
 	uint8_t xPreTemp[FAN_PRESETS];
 	uint8_t xPreSpeed[FAN_PRESETS];
+
+	float xEnvTemp = 0.0;
+
+
+	DS18B20 xDS18B20 ;
 
 };
 

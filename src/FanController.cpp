@@ -49,7 +49,8 @@ void FanController::notifyState(uint16_t dirtyCode){
 		pwm_set_gpio_level	(xPin, s);
 
 		if (pDispAgent != NULL){
-			float f = pState->getTemp();
+			//float f = pState->getTemp();
+			float f = pState->getEnvTemp();
 			pDispAgent->showTemp(f, speed);
 		}
 	}

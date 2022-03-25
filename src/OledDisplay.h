@@ -18,7 +18,7 @@ public:
 	OledDisplay(uint8_t sda, uint8_t sdl);
 	virtual ~OledDisplay();
 
-	void displayString(const char *s, uint8_t scale=1);
+	void displayString(const char *l1, const char *l2, uint8_t scale=1);
 
 protected:
 	ssd1306_t xDisp;

@@ -8,7 +8,7 @@
 #include "DisplayAgent.h"
 #include <stdio.h>
 #include <string.h>
-
+#include "hardware/rtc.h"
 
 DisplayAgent::DisplayAgent(OledDisplay *d) {
 	pDisplay = d;
@@ -47,26 +47,45 @@ void DisplayAgent::vTask( void * pvParameters )
 void DisplayAgent::run(){
 
 	uint8_t screen = 0;
-	char buf[80];
+	char min[3];
+	char buf1[40];
+	char buf2[40];
+	datetime_t t;
+
+
     for( ;; )
     {
     	screen++;
     	switch(screen){
     		case 1:
-    			pDisplay->displayString("COOLER",2);
+			    rtc_get_datetime(&t);
+			    if (t.min < 10){
+			    	sprintf(min, "0%d", t.min);
+			    } else {
+			    	sprintf(min, "%d", t.min);
+			    }
+			    if (t.sec < 10){
+			    	sprintf(buf2, "0%d", t.sec);
+			    } else {
+			    	sprintf(buf2, "%d", t.sec);
+			    }
+			    sprintf(buf1,"%d:%s:%s",t.hour, min, buf2);
+    			pDisplay->displayString("COOLER",buf1,2);
     			break;
     		case 2:
     		case 3:
     		case 4:
-    			sprintf(buf,"%.1fC %d%%",xTemp, xSpeed);
-    			pDisplay->displayString(buf, 1);
+    			sprintf(buf1,"%.1fC", xTemp);
+    			sprintf(buf2,"%d%%",  xSpeed);
+    			pDisplay->displayString(buf1,buf2, 2);
     			break;
     		case 5:
     			if (xIP[0] == 0){
-					pDisplay->displayString("NO IP", 2);
+					pDisplay->displayString("NO IP","", 2);
     			} else {
-    				sprintf(buf,"%d.%d.%d.%d",xIP[0],xIP[1],xIP[2],xIP[3]);
-					pDisplay->displayString(buf, 1);
+    				sprintf(buf1,"%d.%d",xIP[0],xIP[1]);
+    				sprintf(buf2,".%d.%d",xIP[2],xIP[3]);
+					pDisplay->displayString(buf1,buf2, 2);
     			}
     		default:
     			screen=0;

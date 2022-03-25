@@ -41,9 +41,15 @@ OledDisplay::~OledDisplay() {
 }
 
 
-void OledDisplay::displayString(const char *s, uint8_t scale){
-	strcpy(xBuf, s);
+void OledDisplay::displayString(const char *l1, const char *l2, uint8_t scale){
+
 	ssd1306_clear(&xDisp);
-	ssd1306_draw_string(&xDisp, 0, 0, scale, xBuf);
+
+	strcpy(xBuf, l1);
+	ssd1306_draw_string(&xDisp, 0, 2, scale, xBuf);
+
+	strcpy(xBuf, l2);
+	ssd1306_draw_string(&xDisp, 0, 26, scale, xBuf);
+
 	ssd1306_show(&xDisp);
 }

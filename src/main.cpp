@@ -221,7 +221,11 @@ init_thread(void* pvParameters) {
 	WatchdogBlinkAgent watchdog;
 	watchdog.start(tskIDLE_PRIORITY+1);
 
-	ledAgent.start(tskIDLE_PRIORITY+1);
+	if (!ledAgent.start(tskIDLE_PRIORITY+2)){
+		LogError(("Led Agent failed to start"));
+	} else {
+		LogInfo(("Led Agent Started"));
+	}
 	ledAgent.set(RGBModeOn,0xFF,0x0,0x0);
 
 	dispAgent.start(tskIDLE_PRIORITY+1);
@@ -242,6 +246,8 @@ init_thread(void* pvParameters) {
 	datetime_t xDate;
     for (;;){
     	vTaskDelay(1000);
+
+    	LogInfo(("LedAgent=%d", ledAgent.getStakHighWater()));
 
     	if (!gEth.isJoined()){
     		//mqttAgent.stop();
@@ -302,7 +308,9 @@ int main()
 
     }
 
-    display.displayString("Hello");
+    sleep_ms(3000);
+
+    display.displayString("Hello","",2);
 
     gEth.init(g_ethernet_buf);
 
