@@ -230,7 +230,7 @@ init_thread(void* pvParameters) {
 
 	dispAgent.start(tskIDLE_PRIORITY+1);
 
-
+	gEth.enableMutex();
 	gEth.dhcpClient();
 	gEth.getIPAddress(ip);
 	dispAgent.showIP(ip);
@@ -308,7 +308,7 @@ int main()
 
     }
 
-    sleep_ms(3000);
+    //sleep_ms(3000);
 
     display.displayString("Hello","",2);
 

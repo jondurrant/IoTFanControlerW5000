@@ -62,8 +62,8 @@ client.publish(connected_topic,p,retain=False,qos=1)
 
 
 j = {'state':{
-        'preTemp': [27, 28, 29],
-        'preSpeed': [10, 60, 100]
+        'preTemp': [23, 25, 29],
+        'preSpeed': [20, 60, 100]
     }
     }
 p = json.dumps(j)
