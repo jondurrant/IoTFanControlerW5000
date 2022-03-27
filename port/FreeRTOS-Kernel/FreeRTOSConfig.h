@@ -39,14 +39,15 @@
 /* Hook function related definitions. */
 #define configUSE_IDLE_HOOK 0
 #define configUSE_TICK_HOOK 0
-#define configCHECK_FOR_STACK_OVERFLOW 0
+#define configCHECK_FOR_STACK_OVERFLOW 1
 #define configUSE_MALLOC_FAILED_HOOK 0
 #define configUSE_DAEMON_TASK_STARTUP_HOOK 0
 
 /* Run time and task stats gathering related definitions. */
-#define configGENERATE_RUN_TIME_STATS 1
-#define configUSE_TRACE_FACILITY 0
+#define configGENERATE_RUN_TIME_STATS 0
+#define configUSE_TRACE_FACILITY 1
 #define configUSE_STATS_FORMATTING_FUNCTIONS 0
+
 
 /* Co-routine related definitions. */
 #define configUSE_CO_ROUTINES 0
@@ -59,7 +60,9 @@
 #define configTIMER_TASK_STACK_DEPTH 180
 
 /* Define to trap errors during development. */
-#define configASSERT(x)
+//#define configASSERT(x)
+extern void vAssertCalled( const char *pcFile, uint32_t ulLine );
+#define configASSERT( x ) if( ( x ) == 0 ) vAssertCalled( __FILE__, __LINE__ )
 
 /* Optional functions - most linkers will remove unused functions anyway. */
 #define INCLUDE_vTaskPrioritySet 1

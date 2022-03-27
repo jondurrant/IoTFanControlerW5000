@@ -69,12 +69,13 @@ void FanState::calcSpeed(){
 
 	speed = 100;
 	for (int8_t i = FAN_PRESETS - 1; i >= 0; i--){
-		if (t >= getPreTemp()[i]){
+		if (t >= (float)getPreTemp()[i]){
+			speed = getPreSpeed()[i];
 			setCurrentSpeed(speed);
 			LogDebug(("Setting %d speed for %fC",speed, t));
+
 			return;
 		}
-		speed = getPreSpeed()[i];
 	}
 
 

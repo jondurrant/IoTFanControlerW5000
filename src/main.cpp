@@ -140,6 +140,8 @@ static const char *sntpHosts[5] = {
 
 char strBuf[2048];
 
+TaskHandle_t initHandle = NULL;
+
 
 //Global Twin Objects
 EthHelper gEth;
@@ -178,6 +180,53 @@ static void wizchip_dhcp_conflict(void);
 
 /* Timer  */
 static void repeating_timer_callback(void);
+
+
+void debugTask(char * name, TaskHandle_t task){
+	TaskStatus_t xTaskStatus;
+	char ready[]="eReady";
+	char run[]="eRunning";
+	char block[]="eBlocked";
+	char sus[]="eSuspended";
+	char del[]="eDeleted";
+	char other[]="Unknown";
+	char *state = other;
+
+
+	vTaskGetInfo( task,
+	              &xTaskStatus,
+				  pdTRUE,
+				  (eTaskState)eInvalid);
+
+	switch(xTaskStatus.eCurrentState){
+	case eReady:
+		state = ready;
+		break;
+	case eRunning:
+		state = run;
+		break;
+	case eBlocked:
+		state = block;
+		break;
+	case eSuspended:
+		state = sus;
+		break;
+	case eDeleted:
+		state = del;
+		break;
+	default:
+		state = other;
+	}
+
+	printf("%s: Priority: %d/%d Run: %d Min: %d eState: %s\n",
+			name,
+			xTaskStatus.uxCurrentPriority,
+			xTaskStatus.uxBasePriority,
+			xTaskStatus.ulRunTimeCounter,
+			xTaskStatus.usStackHighWaterMark,
+			state
+			);
+}
 
 void doMQTT(){
 	//MQTTAgent agent(0, &gEth);
@@ -221,7 +270,7 @@ init_thread(void* pvParameters) {
 	WatchdogBlinkAgent watchdog;
 	watchdog.start(tskIDLE_PRIORITY+1);
 
-	if (!ledAgent.start(tskIDLE_PRIORITY+2)){
+	if (!ledAgent.start(2)){  //tskIDLE_PRIORITY+1)){
 		LogError(("Led Agent failed to start"));
 	} else {
 		LogInfo(("Led Agent Started"));
@@ -247,7 +296,15 @@ init_thread(void* pvParameters) {
     for (;;){
     	vTaskDelay(1000);
 
-    	LogInfo(("LedAgent=%d", ledAgent.getStakHighWater()));
+    	//LogInfo(("LedAgent=%d", ledAgent.getStakHighWater()));
+    	//debugTask("ledAgent", ledAgent.getTask());
+    	//vTaskPrioritySet( ledAgent.getTask(), 1);
+    	debugTask("ledAgent", ledAgent.getTask());
+    	debugTask("watchdog", watchdog.getTask());
+    	debugTask("mqttAgent", mqttAgent.getTask());
+    	debugTask("xTwin", xTwin.getTask());
+    	debugTask("xPing", xPing.getTask());
+    	debugTask("init", initHandle);
 
     	if (!gEth.isJoined()){
     		//mqttAgent.stop();
@@ -308,13 +365,15 @@ int main()
 
     }
 
-    //sleep_ms(3000);
+    sleep_ms(3000);
+
+    configASSERT((true));
 
     display.displayString("Hello","",2);
 
     gEth.init(g_ethernet_buf);
 
-    TaskHandle_t atHandle = NULL;
+
 
 	xTaskCreate(
 		init_thread,
@@ -322,7 +381,7 @@ int main()
 		DHCP_TASK_STACK_SIZE,
 		( void * ) 1,
 		DHCP_TASK_PRIORITY,//tskIDLE_PRIORITY+1,
-		&atHandle );
+		&initHandle );
 
     vTaskStartScheduler();
 

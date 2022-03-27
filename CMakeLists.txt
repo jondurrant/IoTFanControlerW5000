@@ -54,11 +54,12 @@ add_subdirectory(src)
 add_subdirectory(${PORT_DIR})
 
 
-
+set(FREERTOS_PORT_PATH      ${CMAKE_CURRENT_LIST_DIR}/port/FreeRTOS-Kernel)
 set(TWIN_THING_PICO_CONFIG_PATH ${CMAKE_CURRENT_LIST_DIR}/src/config)
 set(COREMQTT_PORT_PATH      ${CMAKE_CURRENT_LIST_DIR}/port/CoreMQTT)
 set(COREMQTT_AGENT_PORT_PATH      ${CMAKE_CURRENT_LIST_DIR}/port/CoreMQTT-Agent)
 
+include_directories([BEFORE] ${FREERTOS_PORT_PATH})
 
 # Include required libraries
 include("lib/twinThingRP2040W5x00/twinThingRP2040W5x00.cmake")

@@ -9,7 +9,7 @@
 #define MQTTCONFIG_H__
 
 #define LIBRARY_LOG_NAME "MQTT EXP"
-#define LIBRARY_LOG_LEVEL LOG_DEBUG
+#define LIBRARY_LOG_LEVEL LOG_INFO
 //#define SdkLog( X ) printf X
 #include <logging_stack.h>
 

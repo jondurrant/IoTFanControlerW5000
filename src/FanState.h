@@ -25,7 +25,7 @@
 #define FAN_MAX_NIGHT_SLOT	9
 #define FAN_PRE_TEMP_SLOT	10
 #define FAN_PRE_SPEED_SLOT	11
-#define FAN_ENV_TEMP_SLOT	11
+#define FAN_ENV_TEMP_SLOT	12
 
 #define FAN_PRESETS 3
 
