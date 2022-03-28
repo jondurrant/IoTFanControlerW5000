@@ -270,12 +270,14 @@ init_thread(void* pvParameters) {
 	WatchdogBlinkAgent watchdog;
 	watchdog.start(tskIDLE_PRIORITY+1);
 
-	if (!ledAgent.start(2)){  //tskIDLE_PRIORITY+1)){
+
+	if (!ledAgent.start(tskIDLE_PRIORITY+1)){
 		LogError(("Led Agent failed to start"));
 	} else {
 		LogInfo(("Led Agent Started"));
 	}
 	ledAgent.set(RGBModeOn,0xFF,0x0,0x0);
+
 
 	dispAgent.start(tskIDLE_PRIORITY+1);
 
@@ -305,6 +307,7 @@ init_thread(void* pvParameters) {
     	debugTask("xTwin", xTwin.getTask());
     	debugTask("xPing", xPing.getTask());
     	debugTask("init", initHandle);
+    	debugTask("dispAgent", dispAgent.getTask());
 
     	if (!gEth.isJoined()){
     		//mqttAgent.stop();
