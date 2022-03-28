@@ -9,6 +9,8 @@ add_executable(${NAME}
 		FanController.cpp
 		OledDisplay.cpp
 		DisplayAgent.cpp
+		RotEncAgent.cpp
+		RotEncListener.cpp
 #		EthHelper.cpp
 #		TCPTransport.cpp
 #		MQTTAgent.cpp
@@ -37,7 +39,7 @@ target_link_libraries(${NAME}
 	IOLIBRARY_FILES
 	coreMQTT 
 	coreMQTTAgent
-	ds20b18pio
+	ds18b20pio
 )
 
 # enable usb output, disable uart output

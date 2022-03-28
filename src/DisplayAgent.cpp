@@ -24,7 +24,7 @@ bool DisplayAgent::start(UBaseType_t priority){
 
 	xReturned = xTaskCreate(
 		DisplayAgent::vTask,       /* Function that implements the task. */
-		"RGB",   /* Text name for the task. */
+		"DisplayAgent",   /* Text name for the task. */
 		500,             /* Stack size in words, not bytes. */
 		( void * ) this,    /* Parameter passed into the task. */
 		priority,/* Priority at which the task is created. */

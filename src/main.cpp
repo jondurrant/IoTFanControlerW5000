@@ -54,7 +54,8 @@ extern "C" {
 #include "FanController.h"
 #include "DisplayAgent.h"
 
-
+#include "RotEncAgent.h"
+#include "RotEncListener.h"
 /**
  * ----------------------------------------------------------------------------------------------------
  * Macros
@@ -132,8 +133,8 @@ static volatile uint32_t g_msec_cnt = 0;
 
 static const char *sntpHosts[5] = {
 		"nas3.local.jondurrant.com",
-		"0.uk.pool.ntp.org",
-		"1.uk.pool.ntp.org",
+		"ntp2.sandvika.net",
+		"time.cloudflare.com",
 		"ntp2a.mcc.ac.uk",
 		"ntp2b.mcc.ac.uk"};
 
@@ -163,6 +164,9 @@ OledDisplay display = OledDisplay(14, 15);
 DisplayAgent dispAgent = DisplayAgent(&display);
 
 FanController fanControl = FanController(&state, &dispAgent, 0);
+
+RotEncAgent rotEncAgent = RotEncAgent(12, 11, 10, 20);
+RotEncListener rotEncListener;
 
 /**
  * ----------------------------------------------------------------------------------------------------
@@ -281,6 +285,9 @@ init_thread(void* pvParameters) {
 
 	dispAgent.start(tskIDLE_PRIORITY+1);
 
+	rotEncAgent.setListener(&rotEncListener);
+	rotEncAgent.start(tskIDLE_PRIORITY+1);
+
 	gEth.enableMutex();
 	gEth.dhcpClient();
 	gEth.getIPAddress(ip);
@@ -308,6 +315,7 @@ init_thread(void* pvParameters) {
     	debugTask("xPing", xPing.getTask());
     	debugTask("init", initHandle);
     	debugTask("dispAgent", dispAgent.getTask());
+    	debugTask("rotEncAgent", rotEncAgent.getTask());
 
     	if (!gEth.isJoined()){
     		//mqttAgent.stop();
