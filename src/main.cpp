@@ -161,7 +161,7 @@ RGBLEDAgent ledAgent = RGBLEDAgent(5,3,2);
 RGBLEDMgr   ledMgr = RGBLEDMgr(&ledAgent);
 
 OledDisplay display = OledDisplay(14, 15);
-DisplayAgent dispAgent = DisplayAgent(&display);
+DisplayAgent dispAgent = DisplayAgent(&display, &state);
 
 FanController fanControl = FanController(&state, &dispAgent, 0);
 
@@ -285,7 +285,8 @@ init_thread(void* pvParameters) {
 
 	dispAgent.start(tskIDLE_PRIORITY+1);
 
-	rotEncAgent.setListener(&rotEncListener);
+	rotEncAgent.setListener(&dispAgent);
+	//rotEncAgent.setListener(&rotEncListener);
 	rotEncAgent.start(tskIDLE_PRIORITY+1);
 
 	gEth.enableMutex();

@@ -8,10 +8,15 @@
 #include "DisplayAgent.h"
 #include <stdio.h>
 #include <string.h>
+
+#include "FanLogging.h"
 #include "hardware/rtc.h"
 
-DisplayAgent::DisplayAgent(OledDisplay *d) {
+enum RotEncEvent { REEShort, REELong, REECW, REECCW };
+
+DisplayAgent::DisplayAgent(OledDisplay *d, FanState *state) {
 	pDisplay = d;
+	pState = state;
 	noIP();
 }
 
@@ -22,14 +27,20 @@ DisplayAgent::~DisplayAgent() {
 bool DisplayAgent::start(UBaseType_t priority){
 	BaseType_t xReturned;
 
-	xReturned = xTaskCreate(
-		DisplayAgent::vTask,       /* Function that implements the task. */
-		"DisplayAgent",   /* Text name for the task. */
-		500,             /* Stack size in words, not bytes. */
-		( void * ) this,    /* Parameter passed into the task. */
-		priority,/* Priority at which the task is created. */
-		&xHandle
-	);
+	xRotEnc = xQueueCreate( 10, sizeof( uint8_t ) );
+	if (xRotEnc == NULL){
+		LogError(("Unable to create queue"));
+	} else {
+
+		xReturned = xTaskCreate(
+			DisplayAgent::vTask,       /* Function that implements the task. */
+			"DisplayAgent",   /* Text name for the task. */
+			500,             /* Stack size in words, not bytes. */
+			( void * ) this,    /* Parameter passed into the task. */
+			priority,/* Priority at which the task is created. */
+			&xHandle
+		);
+	}
 	return (xReturned == pdPASS);
 }
 
@@ -48,16 +59,30 @@ void DisplayAgent::run(){
 
 	uint8_t screen = 0;
 	char min[3];
-	char buf1[40];
-	char buf2[40];
 	datetime_t t;
-
+	RotEncEvent event;
 
     for( ;; )
     {
     	screen++;
+
+    	if( xQueueReceive( xRotEnc, (void *) &event ,( TickType_t )0) == pdPASS ){
+    		if (event == REECW){
+    			xStateItem++;
+    			if (xStateItem > 4)
+    				xStateItem = 0;
+    		}
+    		if (event == REECCW){
+				xStateItem--;
+				if (xStateItem <0)
+					xStateItem = 4;
+			}
+    	    screen = 80;
+    	}
+
+
     	switch(screen){
-    		case 1:
+    		case 10:
 			    rtc_get_datetime(&t);
 			    if (t.min < 10){
 			    	sprintf(min, "0%d", t.min);
@@ -65,32 +90,40 @@ void DisplayAgent::run(){
 			    	sprintf(min, "%d", t.min);
 			    }
 			    if (t.sec < 10){
-			    	sprintf(buf2, "0%d", t.sec);
+			    	sprintf(xBuf2, "0%d", t.sec);
 			    } else {
-			    	sprintf(buf2, "%d", t.sec);
+			    	sprintf(xBuf2, "%d", t.sec);
 			    }
-			    sprintf(buf1,"%d:%s:%s",t.hour, min, buf2);
-    			pDisplay->displayString("COOLER",buf1,2);
+			    sprintf(xBuf1,"%d:%s:%s",t.hour, min, xBuf2);
+    			pDisplay->displayString("COOLER",xBuf1,2);
     			break;
-    		case 2:
-    		case 3:
-    		case 4:
-    			sprintf(buf1,"%.1fC", xTemp);
-    			sprintf(buf2,"%d%%",  xSpeed);
-    			pDisplay->displayString(buf1,buf2, 2);
+    		case 20:
+    		case 30:
+    		case 40:
+    			sprintf(xBuf1,"%.1fC", xTemp);
+    			sprintf(xBuf2,"%d%%",  xSpeed);
+    			pDisplay->displayString(xBuf1,xBuf2, 2);
     			break;
-    		case 5:
+    		case 50:
     			if (xIP[0] == 0){
 					pDisplay->displayString("NO IP","", 2);
     			} else {
-    				sprintf(buf1,"%d.%d",xIP[0],xIP[1]);
-    				sprintf(buf2,".%d.%d",xIP[2],xIP[3]);
-					pDisplay->displayString(buf1,buf2, 2);
+    				sprintf(xBuf1,"%d.%d",xIP[0],xIP[1]);
+    				sprintf(xBuf2,".%d.%d",xIP[2],xIP[3]);
+					pDisplay->displayString(xBuf1,xBuf2, 2);
     			}
-    		default:
-    			screen=0;
+    		case 60:
+    			screen = 0;
+    			break;
+    		case 80:
+    			//pDisplay->displayString("UI","TODO", 2);
+    			displayState();
+    			break;
     	}
-		vTaskDelay(1000);
+    	if (screen > 100){
+    		screen = 0;
+    	}
+		vTaskDelay(100);
     }
 }
 
@@ -108,4 +141,66 @@ void DisplayAgent::noIP(){
 	memset(xIP, 0, 4);
 }
 
+void DisplayAgent::shortPress(void * rotEnv){
+	RotEncEvent event = REEShort;
+	if( xRotEnc != NULL ){
+		if( xQueueSendToBack( xRotEnc,( void * ) &event, ( TickType_t ) 10 ) != pdPASS ){
+	           LogError(("Queue Full"));
+		}
+	}
+}
+
+void DisplayAgent::longPress(void * rotEnv){
+	RotEncEvent event = REELong;
+	if( xRotEnc != NULL ){
+		if( xQueueSendToBack( xRotEnc,( void * ) &event, ( TickType_t ) 10 ) != pdPASS ){
+			   LogError(("Queue Full"));
+		}
+	}
+}
+
+void DisplayAgent::rotate(bool clockwise, int16_t pos, void * rotEnc){
+	RotEncEvent event = REECW;
+	if (!clockwise){
+		event = REECCW;
+	}
+	if( xRotEnc != NULL ){
+		if( xQueueSendToBack( xRotEnc,( void * ) &event, ( TickType_t ) 10 ) != pdPASS ){
+			   LogError(("Queue Full"));
+		}
+	}
+}
+
+void DisplayAgent::displayState(){
+
+	LogInfo(("xStateItem %d", xStateItem));
+	if (pState == NULL){
+		pDisplay->displayString("No","State", 2);
+	} else {
+		switch(xStateItem){
+		case 0: //Fan Speed
+			sprintf(xBuf1, "%d%%", pState->getCurrentSpeed());
+			pDisplay->displayString("Fan",xBuf1, 2);
+			break;
+		case 1: //EnvTemp
+			sprintf(xBuf1, "%.2fC", pState->getEnvTemp());
+			pDisplay->displayString("Env Temp",xBuf1, 2);
+			break;
+		case 2: //Pre 1
+			sprintf(xBuf1, "%dC %d%%", pState->getPreTemp()[0], pState->getPreSpeed()[0]);
+			pDisplay->displayString("Pre1",xBuf1, 2);
+			break;
+		case 3: //Pre 2
+			sprintf(xBuf1, "%dC %d%%", pState->getPreTemp()[1], pState->getPreSpeed()[1]);
+			pDisplay->displayString("Pre2",xBuf1, 2);
+			break;
+		case 4: //Pre 3
+			sprintf(xBuf1, "%dC %d%%", pState->getPreTemp()[2], pState->getPreSpeed()[2]);
+			pDisplay->displayString("Pre3",xBuf1, 2);
+			break;
+		default:
+			pDisplay->displayString("Unknown","State", 2);
+		}
+	}
+}
 

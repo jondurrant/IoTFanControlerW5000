@@ -13,10 +13,13 @@
 #include "queue.h"
 #include "AgentInterface.h"
 #include "OledDisplay.h"
+#include "RotEncListener.h"
+#include "FanState.h"
 
-class DisplayAgent : public AgentInterface{
+
+class DisplayAgent : public AgentInterface, public RotEncListener {
 public:
-	DisplayAgent(OledDisplay *d);
+	DisplayAgent(OledDisplay *d, FanState *state);
 	virtual ~DisplayAgent();
 
 
@@ -33,6 +36,12 @@ public:
 
 	void noIP();
 
+	virtual void shortPress(void * rotEnv);
+
+	virtual void longPress(void * rotEnv);
+
+	virtual void rotate(bool clockwise, int16_t pos, void * rotEnc);
+
 protected:
 	/***
 	 * Internal function to run the task from within the object
@@ -45,6 +54,9 @@ protected:
 	 */
 	static void vTask( void * pvParameters );
 
+
+	void displayState();
+
 private:
 	OledDisplay *pDisplay = NULL;
 
@@ -53,6 +65,13 @@ private:
 	float xTemp= 0.0;
 
 	uint8_t xIP[4];
+
+	QueueHandle_t xRotEnc;
+	FanState *pState = NULL;
+
+	int8_t xStateItem = 0;
+	char xBuf1[40];
+	char xBuf2[40];
 };
 
 #endif /* DISPLAYAGENT_H_ */
