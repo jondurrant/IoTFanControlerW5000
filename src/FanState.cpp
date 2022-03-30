@@ -214,6 +214,14 @@ const uint8_t * FanState::getPreTemp() const{
 
 void FanState::setPreTemp(uint8_t* temps){
 	memcpy(xPreTemp, temps, FAN_PRESETS);
+	setDirty(FAN_PRE_TEMP_SLOT);
+}
+
+void FanState::setPreTemp(uint8_t temp, uint8_t preset){
+	if (preset < FAN_PRESETS){
+		xPreTemp[preset] = temp;
+		setDirty(FAN_PRE_TEMP_SLOT);
+	}
 }
 
 const uint8_t * FanState::getPreSpeed() const{
@@ -222,6 +230,14 @@ const uint8_t * FanState::getPreSpeed() const{
 
 void FanState::setPreSpeed(uint8_t* speeds){
 	memcpy(xPreSpeed, speeds, FAN_PRESETS);
+	setDirty(FAN_PRE_SPEED_SLOT);
+}
+
+void FanState::setPreSpeed(uint8_t speed, uint8_t preset){
+	if (preset < FAN_PRESETS){
+		xPreSpeed[preset] = speed;
+		setDirty(FAN_PRE_SPEED_SLOT);
+	}
 }
 
 

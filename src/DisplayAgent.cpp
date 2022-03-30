@@ -12,7 +12,7 @@
 #include "FanLogging.h"
 #include "hardware/rtc.h"
 
-enum RotEncEvent { REEShort, REELong, REECW, REECCW };
+
 
 DisplayAgent::DisplayAgent(OledDisplay *d, FanState *state) {
 	pDisplay = d;
@@ -60,24 +60,37 @@ void DisplayAgent::run(){
 	uint8_t screen = 0;
 	char min[3];
 	datetime_t t;
-	RotEncEvent event;
+	RotEncEvent event = REENone;
 
     for( ;; )
     {
     	screen++;
 
     	if( xQueueReceive( xRotEnc, (void *) &event ,( TickType_t )0) == pdPASS ){
-    		if (event == REECW){
-    			xStateItem++;
-    			if (xStateItem > 4)
-    				xStateItem = 0;
+    		if (xDAState == DASCarosel){
+    			xDAState = DASState;
     		}
-    		if (event == REECCW){
-				xStateItem--;
-				if (xStateItem <0)
-					xStateItem = 4;
-			}
+    		if (xDAState == DASState){
+				if (event == REECW){
+					xStateItem++;
+					if (xStateItem > 4)
+						xStateItem = 0;
+					event = REENone;
+				}
+				if (event == REECCW){
+					xStateItem--;
+					if (xStateItem <0)
+						xStateItem = 4;
+					event = REENone;
+				}
+				if (event == REEShort){
+					xDAState = DASEdit;
+					event = REENone;
+				}
+    		}
     	    screen = 80;
+    	} else {
+    		event = REENone;
     	}
 
 
@@ -116,12 +129,17 @@ void DisplayAgent::run(){
     			screen = 0;
     			break;
     		case 80:
+    		case 81:
+    		case 82:
+    		case 83:
+    		case 84:
     			//pDisplay->displayString("UI","TODO", 2);
-    			displayState();
+    			displayState(event);
     			break;
     	}
-    	if (screen > 100){
+    	if (screen > 200){
     		screen = 0;
+    		xDAState = DASCarosel;
     	}
 		vTaskDelay(100);
     }
@@ -171,35 +189,139 @@ void DisplayAgent::rotate(bool clockwise, int16_t pos, void * rotEnc){
 	}
 }
 
-void DisplayAgent::displayState(){
+void DisplayAgent::displayState(RotEncEvent event){
 
-	LogInfo(("xStateItem %d", xStateItem));
+	LogInfo(("event %d xDAState %d  xStateItem %d", event, xDAState, xStateItem));
+
 	if (pState == NULL){
 		pDisplay->displayString("No","State", 2);
 	} else {
-		switch(xStateItem){
-		case 0: //Fan Speed
-			sprintf(xBuf1, "%d%%", pState->getCurrentSpeed());
-			pDisplay->displayString("Fan",xBuf1, 2);
-			break;
-		case 1: //EnvTemp
-			sprintf(xBuf1, "%.2fC", pState->getEnvTemp());
-			pDisplay->displayString("Env Temp",xBuf1, 2);
-			break;
-		case 2: //Pre 1
-			sprintf(xBuf1, "%dC %d%%", pState->getPreTemp()[0], pState->getPreSpeed()[0]);
-			pDisplay->displayString("Pre1",xBuf1, 2);
-			break;
-		case 3: //Pre 2
-			sprintf(xBuf1, "%dC %d%%", pState->getPreTemp()[1], pState->getPreSpeed()[1]);
-			pDisplay->displayString("Pre2",xBuf1, 2);
-			break;
-		case 4: //Pre 3
-			sprintf(xBuf1, "%dC %d%%", pState->getPreTemp()[2], pState->getPreSpeed()[2]);
-			pDisplay->displayString("Pre3",xBuf1, 2);
-			break;
-		default:
-			pDisplay->displayString("Unknown","State", 2);
+		if (xDAState == DASState){
+			switch(xStateItem){
+			case 0: //Fan Speed
+				xEditValue = pState->getCurrentSpeed();
+				sprintf(xBuf1, "%d%%", xEditValue);
+				pDisplay->displayString("Fan",xBuf1, 2);
+				break;
+			case 1: //EnvTemp
+				sprintf(xBuf1, "%.2fC", pState->getEnvTemp());
+				pDisplay->displayString("Env Temp",xBuf1, 2);
+				break;
+			case 2: //Pre 1
+				xEditValue = pState->getPreTemp()[0];
+				sprintf(xBuf1, "%dC %d%%", xEditValue, pState->getPreSpeed()[0]);
+				pDisplay->displayString("Pre1",xBuf1, 2);
+				break;
+			case 3: //Pre 2
+				xEditValue = pState->getPreTemp()[1];
+				sprintf(xBuf1, "%dC %d%%", xEditValue, pState->getPreSpeed()[1]);
+				pDisplay->displayString("Pre2",xBuf1, 2);
+				break;
+			case 4: //Pre 3
+				xEditValue = pState->getPreTemp()[2];
+				sprintf(xBuf1, "%dC %d%%", xEditValue, pState->getPreSpeed()[2]);
+				pDisplay->displayString("Pre3",xBuf1, 2);
+				break;
+			default:
+				pDisplay->displayString("Unknown","State", 2);
+			}
+		} else {
+
+			switch(xStateItem){
+			case 0: //Fan Speed
+				doEdit(event, 0, 100);
+				sprintf(xBuf1, "%d%%", xEditValue);
+				pDisplay->displayString("Edit Fan",xBuf1, 2);
+				if ((event == REEShort) || (event == REELong)){
+					pState->setCurrentSpeed(xEditValue);
+					xDAState = DASState;
+					event = REENone;
+				}
+				break;
+			case 2: //Pre 1 Temp
+				doEdit(event, 10, 40);
+				sprintf(xBuf1, "%dC %d%%", xEditValue, pState->getPreSpeed()[0]);
+				pDisplay->displayString("Edit Temp",xBuf1, 2);
+				if ((event == REEShort) || (event == REELong)){
+					pState->setPreTemp(xEditValue, 0);
+					xStateItem += 100;
+					event = REENone;
+					xEditValue = pState->getPreSpeed()[0];
+				}
+				break;
+			case 102: //Pre 1 Temp
+				doEdit(event, 0, 100);
+				sprintf(xBuf1, "%dC %d%%", pState->getPreTemp()[0], xEditValue);
+				pDisplay->displayString("Edit Speed",xBuf1, 2);
+				if ((event == REEShort) || (event == REELong)){
+					pState->setPreSpeed(xEditValue, 0);
+					xDAState = DASState;
+					xStateItem -= 100;
+					event = REENone;
+				}
+				break;
+			case 3: //Pre 2 Temp
+				doEdit(event, 10, 40);
+				sprintf(xBuf1, "%dC %d%%", xEditValue, pState->getPreSpeed()[1]);
+				pDisplay->displayString("Edit Temp",xBuf1, 2);
+				if ((event == REEShort) || (event == REELong)){
+					pState->setPreTemp(xEditValue, 1);
+					xStateItem += 100;
+					event = REENone;
+					xEditValue = pState->getPreSpeed()[1];
+				}
+				break;
+			case 103: //Pre 2 Temp
+				doEdit(event, 0, 100);
+				sprintf(xBuf1, "%dC %d%%", pState->getPreTemp()[1], xEditValue);
+				pDisplay->displayString("Edit Speed",xBuf1, 2);
+				if ((event == REEShort) || (event == REELong)){
+					pState->setPreSpeed(xEditValue, 1);
+					xDAState = DASState;
+					xStateItem -= 100;
+					event = REENone;
+				}
+				break;
+			case 4: //Pre 3 Temp
+				doEdit(event, 10, 40);
+				sprintf(xBuf1, "%dC %d%%", xEditValue, pState->getPreSpeed()[2]);
+				pDisplay->displayString("Edit Temp",xBuf1, 2);
+				if ((event == REEShort) || (event == REELong)){
+					pState->setPreTemp(xEditValue, 2);
+					xStateItem += 100;
+					event = REENone;
+					xEditValue = pState->getPreSpeed()[2];
+				}
+				break;
+			case 104: //Pre 1 Temp
+				doEdit(event, 0, 100);
+				sprintf(xBuf1, "%dC %d%%", pState->getPreTemp()[2], xEditValue);
+				pDisplay->displayString("Edit Speed",xBuf1, 2);
+				if ((event == REEShort) || (event == REELong)){
+					pState->setPreSpeed(xEditValue, 2);
+					xDAState = DASState;
+					xStateItem -= 100;
+					event = REENone;
+				}
+				break;
+			default:
+				xDAState = DASState;
+			}
+		}
+	}
+}
+
+void DisplayAgent::doEdit(RotEncEvent event, int16_t min, int16_t max){
+	if (event == REECW){
+		xEditValue ++;
+		if (xEditValue > max){
+			xEditValue = min;
+		}
+	}
+	if (event == REECCW){
+		xEditValue --;
+		if (xEditValue < min){
+			xEditValue = max;
 		}
 	}
 }

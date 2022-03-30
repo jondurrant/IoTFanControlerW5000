@@ -16,6 +16,8 @@
 #include "RotEncListener.h"
 #include "FanState.h"
 
+enum RotEncEvent { REENone, REEShort, REELong, REECW, REECCW };
+enum DisplayAgentState { DASCarosel, DASState, DASEdit };
 
 class DisplayAgent : public AgentInterface, public RotEncListener {
 public:
@@ -55,7 +57,9 @@ protected:
 	static void vTask( void * pvParameters );
 
 
-	void displayState();
+	void displayState(RotEncEvent event);
+
+	void doEdit(RotEncEvent event, int16_t min, int16_t max);
 
 private:
 	OledDisplay *pDisplay = NULL;
@@ -72,6 +76,10 @@ private:
 	int8_t xStateItem = 0;
 	char xBuf1[40];
 	char xBuf2[40];
+
+	DisplayAgentState xDAState = DASCarosel;
+	int16_t xEditValue = 0;
+
 };
 
 #endif /* DISPLAYAGENT_H_ */

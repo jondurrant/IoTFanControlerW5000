@@ -121,9 +121,12 @@ public:
 
 	const uint8_t * getPreTemp() const;
 	void setPreTemp(uint8_t* temps);
+	void setPreTemp(uint8_t temp, uint8_t preset);
 
 	const uint8_t * getPreSpeed() const;
 	void setPreSpeed(uint8_t* speeds);
+	void setPreSpeed(uint8_t speed, uint8_t preset);
+
 
 
 	/***

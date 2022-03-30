@@ -309,6 +309,7 @@ init_thread(void* pvParameters) {
     	//LogInfo(("LedAgent=%d", ledAgent.getStakHighWater()));
     	//debugTask("ledAgent", ledAgent.getTask());
     	//vTaskPrioritySet( ledAgent.getTask(), 1);
+    	/*
     	debugTask("ledAgent", ledAgent.getTask());
     	debugTask("watchdog", watchdog.getTask());
     	debugTask("mqttAgent", mqttAgent.getTask());
@@ -317,6 +318,7 @@ init_thread(void* pvParameters) {
     	debugTask("init", initHandle);
     	debugTask("dispAgent", dispAgent.getTask());
     	debugTask("rotEncAgent", rotEncAgent.getTask());
+    	*/
 
     	if (!gEth.isJoined()){
     		//mqttAgent.stop();
