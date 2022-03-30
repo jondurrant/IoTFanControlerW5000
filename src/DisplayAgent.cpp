@@ -73,14 +73,14 @@ void DisplayAgent::run(){
     		if (xDAState == DASState){
 				if (event == REECW){
 					xStateItem++;
-					if (xStateItem > 4)
+					if (xStateItem > 9)
 						xStateItem = 0;
 					event = REENone;
 				}
 				if (event == REECCW){
 					xStateItem--;
 					if (xStateItem <0)
-						xStateItem = 4;
+						xStateItem = 9;
 					event = REENone;
 				}
 				if (event == REEShort){
@@ -190,22 +190,24 @@ void DisplayAgent::rotate(bool clockwise, int16_t pos, void * rotEnc){
 }
 
 void DisplayAgent::displayState(RotEncEvent event){
+	datetime_t t;
+	char min[3];
 
-	LogInfo(("event %d xDAState %d  xStateItem %d", event, xDAState, xStateItem));
+	//LogInfo(("event %d xDAState %d  xStateItem %d", event, xDAState, xStateItem));
 
 	if (pState == NULL){
 		pDisplay->displayString("No","State", 2);
 	} else {
 		if (xDAState == DASState){
 			switch(xStateItem){
-			case 0: //Fan Speed
+			case 0: //EnvTemp
+				sprintf(xBuf1, "%.2fC", pState->getEnvTemp());
+				pDisplay->displayString("Env Temp",xBuf1, 2);
+				break;
+			case 1: //Fan Speed
 				xEditValue = pState->getCurrentSpeed();
 				sprintf(xBuf1, "%d%%", xEditValue);
 				pDisplay->displayString("Fan",xBuf1, 2);
-				break;
-			case 1: //EnvTemp
-				sprintf(xBuf1, "%.2fC", pState->getEnvTemp());
-				pDisplay->displayString("Env Temp",xBuf1, 2);
 				break;
 			case 2: //Pre 1
 				xEditValue = pState->getPreTemp()[0];
@@ -222,13 +224,53 @@ void DisplayAgent::displayState(RotEncEvent event){
 				sprintf(xBuf1, "%dC %d%%", xEditValue, pState->getPreSpeed()[2]);
 				pDisplay->displayString("Pre3",xBuf1, 2);
 				break;
+			case 5: //Max Night Speed
+				xEditValue = pState->getMaxNightSpeed();
+				sprintf(xBuf1, "%d%%", xEditValue);
+				pDisplay->displayString("Max Night",xBuf1, 2);
+				break;
+			case 6: //Day start
+				xEditValue = pState->getDayStart();
+				sprintf(xBuf1, "%d:00", xEditValue);
+				pDisplay->displayString("Day Start",xBuf1, 2);
+				break;
+			case 7: //Day start
+				xEditValue = pState->getDayEnd();
+				sprintf(xBuf1, "%d:00", xEditValue);
+				pDisplay->displayString("Day End",xBuf1, 2);
+				break;
+			case 8: // Clock
+				rtc_get_datetime(&t);
+				if (t.min < 10){
+					sprintf(min, "0%d", t.min);
+				} else {
+					sprintf(min, "%d", t.min);
+				}
+				if (t.sec < 10){
+					sprintf(xBuf1, "0%d", t.sec);
+				} else {
+					sprintf(xBuf1, "%d", t.sec);
+				}
+				sprintf(xBuf2, "%d:%s:%s",t.hour, min, xBuf1);
+				sprintf(xBuf1, "%d-%d-%d", t.year%1000, t.month, t.day);
+				pDisplay->displayString(xBuf1,xBuf2,2);
+				break;
+			case 9: // IP Address
+				if (xIP[0] == 0){
+					pDisplay->displayString("NO IP","", 2);
+				} else {
+					sprintf(xBuf1,"IP%d.%d",xIP[0],xIP[1]);
+					sprintf(xBuf2,".%d.%d",xIP[2],xIP[3]);
+					pDisplay->displayString(xBuf1,xBuf2, 2);
+				}
+				break;
 			default:
 				pDisplay->displayString("Unknown","State", 2);
 			}
 		} else {
 
 			switch(xStateItem){
-			case 0: //Fan Speed
+			case 1: //Fan Speed
 				doEdit(event, 0, 100);
 				sprintf(xBuf1, "%d%%", xEditValue);
 				pDisplay->displayString("Edit Fan",xBuf1, 2);
@@ -301,6 +343,36 @@ void DisplayAgent::displayState(RotEncEvent event){
 					pState->setPreSpeed(xEditValue, 2);
 					xDAState = DASState;
 					xStateItem -= 100;
+					event = REENone;
+				}
+				break;
+			case 5: //Max Night Speed
+				doEdit(event, 0, 100);
+				sprintf(xBuf1, "%d%%", xEditValue);
+				pDisplay->displayString("Edit Max",xBuf1, 2);
+				if ((event == REEShort) || (event == REELong)){
+					pState->setMaxNightSpeed(xEditValue);
+					xDAState = DASState;
+					event = REENone;
+				}
+				break;
+			case 6: //Day start
+				doEdit(event, 0, 23);
+				sprintf(xBuf1, "%d:00", xEditValue);
+				pDisplay->displayString("Ed Start",xBuf1, 2);
+				if ((event == REEShort) || (event == REELong)){
+					pState->setDayStart(xEditValue);
+					xDAState = DASState;
+					event = REENone;
+				}
+				break;
+			case 7: //Day start
+				doEdit(event, 0, 23);
+				sprintf(xBuf1, "%d:00", xEditValue);
+				pDisplay->displayString("Edit End",xBuf1, 2);
+				if ((event == REEShort) || (event == REELong)){
+					pState->setDayEnd(xEditValue);
+					xDAState = DASState;
 					event = REENone;
 				}
 				break;

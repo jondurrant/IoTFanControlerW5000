@@ -44,13 +44,13 @@ public:
 	void calcSpeed();
 
 	/***
-	 * Gets the On status of the light
+	 * Gets the On status of the fan
 	 * @return
 	 */
 	bool getOn() const;
 
 	/***
-	 * Sets the on status of the light
+	 * Sets the on status of the fan
 	 * @param b
 	 */
 	void setOn(bool b);
