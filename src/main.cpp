@@ -334,18 +334,13 @@ init_thread(void* pvParameters) {
 
 			if (count >= 300){
 				count = 0;
-				if (gEth.dnsClient(ip, mqttTarget)) {
-					printf("-----------------------------------\n");
-					printf(" JON DNS success\r\n");
-					printf(" Target domain : %s\n", mqttTarget);
-					printf(" IP of target domain : %d.%d.%d.%d\n", ip[0], ip[1], ip[2], ip[3]);
-					printf("-----------------------------------\n");
 
+				if (gEth.dhcpClient()){
+					printf("DHCP Renewed\n");
 				} else {
-					printf("DNS Failed\n");
+					printf("DHCP FAILED Renew\n");
 				}
 
-				//retval = gEth.syncRTCwithSNTP(host);
 				retval = gEth.syncRTCwithSNTP(sntpHosts, 5);
 				printf("SNTP HOST: %s\n", retval?"Ok":"Fail");
 			}
@@ -382,7 +377,7 @@ int main()
 
     sleep_ms(3000);
 
-    configASSERT((true));
+    gEth.rtcInit();
 
     display.displayString("Hello","",2);
 

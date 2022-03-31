@@ -235,12 +235,12 @@ void DisplayAgent::displayState(RotEncEvent event){
 			case 5: //Max Night Speed
 				xEditValue = pState->getMaxNightSpeed();
 				sprintf(xBuf1, "%d%%", xEditValue);
-				pDisplay->displayString("Max Night",xBuf1, 2);
+				pDisplay->displayString("MaxNight",xBuf1, 2);
 				break;
 			case 6: //Day start
 				xEditValue = pState->getDayStart();
 				sprintf(xBuf1, "%d:00", xEditValue);
-				pDisplay->displayString("Day Start",xBuf1, 2);
+				pDisplay->displayString("DayStart",xBuf1, 2);
 				break;
 			case 7: //Day start
 				xEditValue = pState->getDayEnd();
@@ -267,7 +267,7 @@ void DisplayAgent::displayState(RotEncEvent event){
 				if (xIP[0] == 0){
 					pDisplay->displayString("NO IP","", 2);
 				} else {
-					sprintf(xBuf1,"IP%d.%d",xIP[0],xIP[1]);
+					sprintf(xBuf1,"IP%d%d",xIP[0],xIP[1]);
 					sprintf(xBuf2,".%d.%d",xIP[2],xIP[3]);
 					pDisplay->displayString(xBuf1,xBuf2, 2);
 				}
@@ -306,7 +306,7 @@ void DisplayAgent::displayState(RotEncEvent event){
 			case 2: //Pre 1 Temp
 				doEdit(event, 10, 40);
 				sprintf(xBuf1, "%dC %d%%", xEditValue, pState->getPreSpeed()[0]);
-				pDisplay->displayString("Edit Temp",xBuf1, 2);
+				pDisplay->displayString("Ed Temp",xBuf1, 2);
 				if ((event == REEShort) || (event == REELong)){
 					pState->setPreTemp(xEditValue, 0);
 					xStateItem += 100;
@@ -317,7 +317,7 @@ void DisplayAgent::displayState(RotEncEvent event){
 			case 102: //Pre 1 Temp
 				doEdit(event, 0, 100);
 				sprintf(xBuf1, "%dC %d%%", pState->getPreTemp()[0], xEditValue);
-				pDisplay->displayString("Edit Speed",xBuf1, 2);
+				pDisplay->displayString("Ed Speed",xBuf1, 2);
 				if ((event == REEShort) || (event == REELong)){
 					pState->setPreSpeed(xEditValue, 0);
 					xDAState = DASState;
@@ -328,7 +328,7 @@ void DisplayAgent::displayState(RotEncEvent event){
 			case 3: //Pre 2 Temp
 				doEdit(event, 10, 40);
 				sprintf(xBuf1, "%dC %d%%", xEditValue, pState->getPreSpeed()[1]);
-				pDisplay->displayString("Edit Temp",xBuf1, 2);
+				pDisplay->displayString("Ed Temp",xBuf1, 2);
 				if ((event == REEShort) || (event == REELong)){
 					pState->setPreTemp(xEditValue, 1);
 					xStateItem += 100;
@@ -339,7 +339,7 @@ void DisplayAgent::displayState(RotEncEvent event){
 			case 103: //Pre 2 Temp
 				doEdit(event, 0, 100);
 				sprintf(xBuf1, "%dC %d%%", pState->getPreTemp()[1], xEditValue);
-				pDisplay->displayString("Edit Speed",xBuf1, 2);
+				pDisplay->displayString("Ed Speed",xBuf1, 2);
 				if ((event == REEShort) || (event == REELong)){
 					pState->setPreSpeed(xEditValue, 1);
 					xDAState = DASState;
@@ -350,7 +350,7 @@ void DisplayAgent::displayState(RotEncEvent event){
 			case 4: //Pre 3 Temp
 				doEdit(event, 10, 40);
 				sprintf(xBuf1, "%dC %d%%", xEditValue, pState->getPreSpeed()[2]);
-				pDisplay->displayString("Edit Temp",xBuf1, 2);
+				pDisplay->displayString("Ed Temp",xBuf1, 2);
 				if ((event == REEShort) || (event == REELong)){
 					pState->setPreTemp(xEditValue, 2);
 					xStateItem += 100;
@@ -361,7 +361,7 @@ void DisplayAgent::displayState(RotEncEvent event){
 			case 104: //Pre 1 Temp
 				doEdit(event, 0, 100);
 				sprintf(xBuf1, "%dC %d%%", pState->getPreTemp()[2], xEditValue);
-				pDisplay->displayString("Edit Speed",xBuf1, 2);
+				pDisplay->displayString("Ed Speed",xBuf1, 2);
 				if ((event == REEShort) || (event == REELong)){
 					pState->setPreSpeed(xEditValue, 2);
 					xDAState = DASState;

@@ -64,6 +64,7 @@ void FanState::calcSpeed(){
 	uint8_t speed = 0;
 
 	if (getOverrideMinutes()>0){
+		LogDebug(("Fan Speed is overriden"));
 		return;
 	}
 
@@ -171,11 +172,11 @@ void FanState::setDay(bool xDay) {
  */
 uint8_t FanState::getCurrentSpeed(){
 	if (!getOn()){
-		setCurrentSpeed(0);
+		return 0;
 	}
 	if (! isDay()){
 		if (xCSpeed > getMaxNightSpeed()){
-			setCurrentSpeed(getMaxNightSpeed());
+			return getMaxNightSpeed();
 		}
 	}
 	return xCSpeed;
@@ -314,9 +315,10 @@ void FanState::updateClock(){
 
 	setDirty(FAN_CLOCK_SLOT);
 	updateTemp();
-	calcSpeed();
 
 	setEnvTemp(xDS18B20.getTemperature());
+	calcSpeed();
+
 	xDS18B20.convert();
 }
 
