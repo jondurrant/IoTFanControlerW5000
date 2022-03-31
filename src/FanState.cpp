@@ -24,7 +24,7 @@
  * State will have 4 element two from StateTemperature and two added here
  */
 FanState::FanState() {
-	elements=12;
+	elements=14;
 
 	jsonHelpers[FAN_ON_SLOT] = (StateFunc)&FanState::jsonOn;
 	jsonHelpers[FAN_DAY_END_SLOT] = (StateFunc)&FanState::jsonDayEnd;
@@ -36,6 +36,8 @@ FanState::FanState() {
 	jsonHelpers[FAN_PRE_TEMP_SLOT] = (StateFunc)&FanState::jsonPreTemp;
 	jsonHelpers[FAN_PRE_SPEED_SLOT] = (StateFunc)&FanState::jsonPreSpeed;
 	jsonHelpers[FAN_ENV_TEMP_SLOT] = (StateFunc)&FanState::jsonEnvTemp;
+	jsonHelpers[FAN_OVERRIDE_SLOT] = (StateFunc)&FanState::jsonOverrideMinutes;
+
 
 	memset(xPreTemp,  0, FAN_PRESETS);
 	memset(xPreSpeed, 0, FAN_PRESETS);
@@ -60,6 +62,10 @@ void FanState::calcSpeed(){
 	//float t = getTemp();
 	float t = getEnvTemp();
 	uint8_t speed = 0;
+
+	if (getOverrideMinutes()>0){
+		return;
+	}
 
 	if (t < getPreTemp()[0]){
 		setCurrentSpeed(speed);
@@ -246,8 +252,10 @@ void FanState::setPreSpeed(uint8_t speed, uint8_t preset){
  * @param temp
  */
 void FanState::setEnvTemp(float temp){
-	xEnvTemp = temp;
-	setDirty(FAN_ENV_TEMP_SLOT);
+	if (temp != xEnvTemp){
+		xEnvTemp = temp;
+		setDirty(FAN_ENV_TEMP_SLOT);
+	}
 }
 
 
@@ -260,12 +268,50 @@ float FanState::getEnvTemp(){
 }
 
 
+/***
+ * Number of minutes left for fan speed override
+ * @return
+ */
+uint16_t FanState::getOverrideMinutes(){
+	return xOverrideMinutes;
+}
+
+/***
+ * Set number of minutes to override fan speed for
+ * @param min
+ */
+void FanState::setOverrideMinutes(uint16_t min){
+	xOverrideMinutes = min;
+	setDirty(FAN_OVERRIDE_SLOT);
+}
+
+
+
 
 
 /***
 * Update time and temp and trigger state update
 */
 void FanState::updateClock(){
+	datetime_t time;
+	rtc_get_datetime(&time);
+	if ( (time.hour > getDayStart()) && (time.hour < getDayEnd()) ){
+		if (!isDay()){
+			setDay(true);
+		}
+	} else {
+		if (isDay()){
+			setDay(false);
+		}
+	}
+
+	if (time.min != xMin){
+		xMin = time.min;
+		if (getOverrideMinutes() > 0){
+			setOverrideMinutes(getOverrideMinutes() -1);
+		}
+	}
+
 	setDirty(FAN_CLOCK_SLOT);
 	updateTemp();
 	calcSpeed();
@@ -420,6 +466,18 @@ char* FanState::jsonPreSpeed(char *buf, unsigned int len){
 char* FanState::jsonEnvTemp(char *buf, unsigned int len){
 	char *p = buf;
 	p = json_double( p, "envTemp", getEnvTemp(), &len);
+	return p;
+}
+
+/***
+ * Fan speed override time in minutes JSON format
+ * @param buf
+ * @param len
+ * @return
+ */
+char* FanState::jsonOverrideMinutes(char *buf, unsigned int len){
+	char *p = buf;
+	p = json_uint( p, "override", getOverrideMinutes(), &len);
 	return p;
 }
 

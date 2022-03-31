@@ -15,13 +15,14 @@
 #include "OledDisplay.h"
 #include "RotEncListener.h"
 #include "FanState.h"
+#include "EthHelper.h"
 
 enum RotEncEvent { REENone, REEShort, REELong, REECW, REECCW };
 enum DisplayAgentState { DASCarosel, DASState, DASEdit };
 
 class DisplayAgent : public AgentInterface, public RotEncListener {
 public:
-	DisplayAgent(OledDisplay *d, FanState *state);
+	DisplayAgent(OledDisplay *d, FanState *state, EthHelper *eth);
 	virtual ~DisplayAgent();
 
 
@@ -44,6 +45,8 @@ public:
 
 	virtual void rotate(bool clockwise, int16_t pos, void * rotEnc);
 
+	void online(bool b);
+
 protected:
 	/***
 	 * Internal function to run the task from within the object
@@ -59,11 +62,11 @@ protected:
 
 	void displayState(RotEncEvent event);
 
-	void doEdit(RotEncEvent event, int16_t min, int16_t max);
+	void doEdit(RotEncEvent event, int16_t min, int16_t max, int16_t inc=1);
 
 private:
 	OledDisplay *pDisplay = NULL;
-
+	EthHelper *pEth = NULL;
 
 	uint8_t xSpeed = 0;
 	float xTemp= 0.0;
@@ -79,6 +82,7 @@ private:
 
 	DisplayAgentState xDAState = DASCarosel;
 	int16_t xEditValue = 0;
+	bool xOnline=false;
 
 };
 

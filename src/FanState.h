@@ -26,6 +26,8 @@
 #define FAN_PRE_TEMP_SLOT	10
 #define FAN_PRE_SPEED_SLOT	11
 #define FAN_ENV_TEMP_SLOT	12
+#define FAN_OVERRIDE_SLOT	13
+
 
 #define FAN_PRESETS 3
 
@@ -106,6 +108,19 @@ public:
 	void setEnvTemp(float temp);
 
 	/***
+	 * Number of minutes left for fan speed override
+	 * @return
+	 */
+	uint16_t getOverrideMinutes();
+
+	/***
+	 * Set number of minutes to override fan speed for
+	 * @param min
+	 */
+	void setOverrideMinutes(uint16_t min);
+
+
+	/***
 	 * Update time and temp and trigger state update
 	 */
 	void updateClock();
@@ -146,7 +161,7 @@ public:
 
 protected:
 	/***
-	 * Retried On status in JSON format
+	 *  On status in JSON format
 	 * @param buf
 	 * @param len
 	 * @return
@@ -154,7 +169,7 @@ protected:
 	char* jsonOn(char *buf, unsigned int len);
 
 	/***
-	 * Retried Day Start Hour status in JSON format
+	 *  Day Start Hour status in JSON format
 	 * @param buf
 	 * @param len
 	 * @return
@@ -162,7 +177,7 @@ protected:
 	char* jsonDayStart(char *buf, unsigned int len);
 
 	/***
-	 * Retried Day End Hour status in JSON format
+	 *  Day End Hour status in JSON format
 	 * @param buf
 	 * @param len
 	 * @return
@@ -170,7 +185,7 @@ protected:
 	char* jsonDayEnd(char *buf, unsigned int len);
 
 	/***
-	 * Retried Day in JSON format
+	 *  Day in JSON format
 	 * @param buf
 	 * @param len
 	 * @return
@@ -178,7 +193,7 @@ protected:
 	char* jsonDay(char *buf, unsigned int len);
 
 	/***
-	 * Retried Time in JSON format
+	 *  Time in JSON format
 	 * @param buf
 	 * @param len
 	 * @return
@@ -186,7 +201,7 @@ protected:
 	char* jsonClock(char *buf, unsigned int len);
 
 	/***
-	 * Retried Current Speed in JSON format
+	 *  Current Speed in JSON format
 	 * @param buf
 	 * @param len
 	 * @return
@@ -194,7 +209,7 @@ protected:
 	char* jsonCSpeed(char *buf, unsigned int len);
 
 	/***
-	 * Retried Max Night Speed in JSON format
+	 *  Max Night Speed in JSON format
 	 * @param buf
 	 * @param len
 	 * @return
@@ -202,7 +217,7 @@ protected:
 	char* jsonMSpeed(char *buf, unsigned int len);
 
 	/***
-	 * Retried Preset Temp in JSON format
+	 *  Preset Temp in JSON format
 	 * @param buf
 	 * @param len
 	 * @return
@@ -210,7 +225,7 @@ protected:
 	char* jsonPreTemp(char *buf, unsigned int len);
 
 	/***
-	 * Retried Preset Speed in JSON format
+	 *  Preset Speed in JSON format
 	 * @param buf
 	 * @param len
 	 * @return
@@ -218,12 +233,20 @@ protected:
 	char* jsonPreSpeed(char *buf, unsigned int len);
 
 	/***
-	 * Retried Preset Speed in JSON format
+	 *  Preset Speed in JSON format
 	 * @param buf
 	 * @param len
 	 * @return
 	 */
 	char* jsonEnvTemp(char *buf, unsigned int len);
+
+	/***
+	 * Fan speed override time in minutes JSON format
+	 * @param buf
+	 * @param len
+	 * @return
+	 */
+	char* jsonOverrideMinutes(char *buf, unsigned int len);
 
 private:
 	//Is Fan on
@@ -246,6 +269,9 @@ private:
 
 
 	DS18B20 xDS18B20 ;
+
+	uint8_t xMin = 0;
+	uint16_t xOverrideMinutes = 0;
 
 };
 

@@ -25,6 +25,10 @@ void RGBLEDMgr::MQTTOffline(){
 		}
 	}
 
+	if (pDisp != NULL){
+		pDisp->online(false);
+	}
+
 	LogDebug(("Offline"));
 }
 
@@ -33,6 +37,10 @@ void RGBLEDMgr::MQTTOnline(){
 		if (pLed->set(RGBModeOn,0, 0, 0xFF)){
 			LogError(("Set failed"));
 		}
+	}
+
+	if (pDisp != NULL){
+		pDisp->online(true);
 	}
 	LogDebug(("Online"));
 }
@@ -53,4 +61,8 @@ void RGBLEDMgr::MQTTRecv(){
 		}
 	}
 	LogDebug(("Recv"));
+}
+
+void RGBLEDMgr::setDisplayAgent(DisplayAgent *disp){
+	pDisp = disp;
 }

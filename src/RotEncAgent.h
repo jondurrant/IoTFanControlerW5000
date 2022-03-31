@@ -89,6 +89,9 @@ private:
 	uint8_t xCW[4] ={2,0,3,1};
 	uint8_t xCCW[4]={1,3,0,2};
 
+	bool xShort = false;
+	bool xLong = false;
+
 };
 
 #endif /* ROTENCAGENT_H_ */

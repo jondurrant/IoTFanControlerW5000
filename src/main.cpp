@@ -161,7 +161,7 @@ RGBLEDAgent ledAgent = RGBLEDAgent(5,3,2);
 RGBLEDMgr   ledMgr = RGBLEDMgr(&ledAgent);
 
 OledDisplay display = OledDisplay(14, 15);
-DisplayAgent dispAgent = DisplayAgent(&display, &state);
+DisplayAgent dispAgent = DisplayAgent(&display, &state, &gEth);
 
 FanController fanControl = FanController(&state, &dispAgent, 0);
 
@@ -282,7 +282,7 @@ init_thread(void* pvParameters) {
 	}
 	ledAgent.set(RGBModeOn,0xFF,0x0,0x0);
 
-
+	ledMgr.setDisplayAgent(&dispAgent);
 	dispAgent.start(tskIDLE_PRIORITY+1);
 
 	rotEncAgent.setListener(&dispAgent);
@@ -296,6 +296,7 @@ init_thread(void* pvParameters) {
 	ledAgent.set(RGBModeOn,0xFF,0xCE,0x42);
 
 	//retval=gEth.syncRTCwithSNTP(sntpSvr);
+	gEth.setSNTPServers(sntpHosts, 5);
 	retval = gEth.syncRTCwithSNTP(sntpHosts, 5);
 	printf("SNTP Res: %s\n", retval?"Ok":"Fail");
 

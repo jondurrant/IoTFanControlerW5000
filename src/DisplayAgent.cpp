@@ -14,9 +14,10 @@
 
 
 
-DisplayAgent::DisplayAgent(OledDisplay *d, FanState *state) {
+DisplayAgent::DisplayAgent(OledDisplay *d, FanState *state, EthHelper *eth) {
 	pDisplay = d;
 	pState = state;
+	pEth = eth;
 	noIP();
 }
 
@@ -115,28 +116,32 @@ void DisplayAgent::run(){
     		case 40:
     			sprintf(xBuf1,"%.1fC", xTemp);
     			sprintf(xBuf2,"%d%%",  xSpeed);
+    			if (pState != NULL) {
+    				if (pState->getOverrideMinutes() > 0){
+    					sprintf(xBuf2,"%d%% OR",  xSpeed);
+    				}
+    			}
     			pDisplay->displayString(xBuf1,xBuf2, 2);
     			break;
     		case 50:
     			if (xIP[0] == 0){
 					pDisplay->displayString("NO IP","", 2);
     			} else {
-    				sprintf(xBuf1,"%d.%d",xIP[0],xIP[1]);
-    				sprintf(xBuf2,".%d.%d",xIP[2],xIP[3]);
-					pDisplay->displayString(xBuf1,xBuf2, 2);
+    				if (xOnline){
+    					pDisplay->displayString("Online","", 2);
+    				} else {
+    					pDisplay->displayString("Offline","", 2);
+    				}
     			}
+    			break;
     		case 60:
     			screen = 0;
     			break;
-    		case 80:
-    		case 81:
-    		case 82:
-    		case 83:
-    		case 84:
-    			//pDisplay->displayString("UI","TODO", 2);
-    			displayState(event);
-    			break;
     	}
+    	if (screen >= 80){
+    		displayState(event);
+    	}
+
     	if (screen > 200){
     		screen = 0;
     		xDAState = DASCarosel;
@@ -192,6 +197,7 @@ void DisplayAgent::rotate(bool clockwise, int16_t pos, void * rotEnc){
 void DisplayAgent::displayState(RotEncEvent event){
 	datetime_t t;
 	char min[3];
+	uint16_t om;
 
 	//LogInfo(("event %d xDAState %d  xStateItem %d", event, xDAState, xStateItem));
 
@@ -206,8 +212,10 @@ void DisplayAgent::displayState(RotEncEvent event){
 				break;
 			case 1: //Fan Speed
 				xEditValue = pState->getCurrentSpeed();
-				sprintf(xBuf1, "%d%%", xEditValue);
-				pDisplay->displayString("Fan",xBuf1, 2);
+				sprintf(xBuf1, "Fan %d%%", xEditValue);
+				om = pState->getOverrideMinutes();
+				sprintf(xBuf2, "%d %d:%d", om / (60*24),  (om/60)%24, om%60);
+				pDisplay->displayString(xBuf1,xBuf2, 2);
 				break;
 			case 2: //Pre 1
 				xEditValue = pState->getPreTemp()[0];
@@ -276,8 +284,23 @@ void DisplayAgent::displayState(RotEncEvent event){
 				pDisplay->displayString("Edit Fan",xBuf1, 2);
 				if ((event == REEShort) || (event == REELong)){
 					pState->setCurrentSpeed(xEditValue);
-					xDAState = DASState;
+					xStateItem += 100;
 					event = REENone;
+					xEditValue = pState->getOverrideMinutes();
+					if (xEditValue == 0){
+						xEditValue = 10;
+					}
+				}
+				break;
+			case 101:
+				doEdit(event, 0, 24*60*10, 10);
+				sprintf(xBuf1, "%d %d:%d", xEditValue / (60*24),  (xEditValue/60)%24, xEditValue%60);
+				pDisplay->displayString("Edit Fan",xBuf1, 2);
+				if ((event == REEShort) || (event == REELong)){
+					pState->setOverrideMinutes(xEditValue);
+					xStateItem -= 100;
+					event = REENone;
+					xDAState = DASState;
 				}
 				break;
 			case 2: //Pre 1 Temp
@@ -376,6 +399,24 @@ void DisplayAgent::displayState(RotEncEvent event){
 					event = REENone;
 				}
 				break;
+			case 8: // Clock
+				rtc_get_datetime(&t);
+				if (t.min < 10){
+					sprintf(min, "0%d", t.min);
+				} else {
+					sprintf(min, "%d", t.min);
+				}
+				if (t.sec < 10){
+					sprintf(xBuf1, "0%d", t.sec);
+				} else {
+					sprintf(xBuf1, "%d", t.sec);
+				}
+				sprintf(xBuf2, "%d:%s:%s",t.hour, min, xBuf1);
+				pDisplay->displayString("NTP Req", xBuf2,2);
+				//pEth->syncRTCwithSNTP();
+				xDAState = DASState;
+				event = REENone;
+				break;
 			default:
 				xDAState = DASState;
 			}
@@ -383,18 +424,25 @@ void DisplayAgent::displayState(RotEncEvent event){
 	}
 }
 
-void DisplayAgent::doEdit(RotEncEvent event, int16_t min, int16_t max){
+void DisplayAgent::doEdit(RotEncEvent event, int16_t min, int16_t max, int16_t inc){
 	if (event == REECW){
-		xEditValue ++;
+		xEditValue += inc;
 		if (xEditValue > max){
 			xEditValue = min;
 		}
+		xEditValue = xEditValue / inc * inc;
 	}
 	if (event == REECCW){
-		xEditValue --;
+		xEditValue -= inc;
 		if (xEditValue < min){
 			xEditValue = max;
 		}
+		xEditValue = xEditValue / inc * inc;
 	}
 }
 
+
+
+void DisplayAgent::online(bool b){
+	xOnline = b;
+}

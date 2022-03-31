@@ -11,6 +11,7 @@
 
 #include <MQTTAgentObserver.h>
 #include <RGBLEDAgent.h>
+#include "DisplayAgent.h"
 
 class RGBLEDMgr : public  MQTTAgentObserver {
 public:
@@ -25,8 +26,11 @@ public:
 
 	virtual void MQTTRecv();
 
+	void setDisplayAgent(DisplayAgent *disp);
+
 private:
 	RGBLEDAgent * pLed = NULL;
+	DisplayAgent * pDisp = NULL;
 };
 
 #endif /* RGBLEDMGR_H_ */

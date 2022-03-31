@@ -96,9 +96,11 @@ void RotEncAgent::handleGPIO(uint gpio, uint32_t events){
 				return;
 			} else if (t < LONGPRESSMSEC){
 				//printf("t=%d\n",t);
-				handleShortPress();
+				//handleShortPress();
+				xShort = true;
 			} else {
-				handleLongPress();
+				//handleLongPress();
+				xLong = true;
 			}
 		}
 	}
@@ -138,6 +140,16 @@ void RotEncAgent::poll(){
 	c = gpio_get(xAGP);
 	c = c << 1;
 	c = (gpio_get(xBGP)) | c;
+
+	if (xShort){
+		xShort = false;
+		handleShortPress();
+	}
+
+	if (xLong){
+		xLong = false;
+		handleLongPress();
+	}
 
 	if (xCW[xLast] == c){
 		xCount++;
