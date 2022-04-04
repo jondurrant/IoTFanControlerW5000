@@ -133,7 +133,7 @@ static volatile uint32_t g_msec_cnt = 0;
 
 static const char *sntpHosts[5] = {
 		"nas3.local.jondurrant.com",
-		"ntp2.sandvika.net",
+		"nas3.local.jondurrant.com",
 		"time.cloudflare.com",
 		"ntp2a.mcc.ac.uk",
 		"ntp2b.mcc.ac.uk"};

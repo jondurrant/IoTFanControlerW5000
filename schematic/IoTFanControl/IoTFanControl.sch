@@ -1,0 +1,288 @@
+EESchema Schematic File Version 4
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L Raspberry_PICO:Pico U?
+U 1 1 6249629C
+P 5400 3200
+F 0 "U?" H 5400 4415 50  0000 C CNN
+F 1 "Pico" H 5400 4324 50  0000 C CNN
+F 2 "RPi_Pico:RPi_Pico_SMD_TH" V 5400 3200 50  0001 C CNN
+F 3 "" H 5400 3200 50  0001 C CNN
+	1    5400 3200
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:RJ45 J?
+U 1 1 62498687
+P 5350 4800
+F 0 "J?" V 5361 5330 50  0000 L CNN
+F 1 "RJ45" V 5452 5330 50  0000 L CNN
+F 2 "" V 5350 4825 50  0001 C CNN
+F 3 "~" V 5350 4825 50  0001 C CNN
+	1    5350 4800
+	0    1    1    0   
+$EndComp
+$Comp
+L Connector:Conn_01x03_Male J3
+U 1 1 6249F2C7
+P 2600 2550
+F 0 "J3" H 2708 2831 50  0000 C CNN
+F 1 "Jumper" H 2708 2740 50  0000 C CNN
+F 2 "" H 2600 2550 50  0001 C CNN
+F 3 "~" H 2600 2550 50  0001 C CNN
+	1    2600 2550
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:Conn_01x04_Male J2
+U 1 1 624AB299
+P 2600 2050
+F 0 "J2" H 2708 2331 50  0000 C CNN
+F 1 "Fan2" H 2708 2240 50  0000 C CNN
+F 2 "" H 2600 2050 50  0001 C CNN
+F 3 "~" H 2600 2050 50  0001 C CNN
+	1    2600 2050
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:Conn_01x04_Male J1
+U 1 1 624ABFA5
+P 3600 2050
+F 0 "J1" H 3708 2331 50  0000 C CNN
+F 1 "Fan1" H 3708 2240 50  0000 C CNN
+F 2 "" H 3600 2050 50  0001 C CNN
+F 3 "~" H 3600 2050 50  0001 C CNN
+	1    3600 2050
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 624ACB61
+P 1950 1600
+F 0 "#PWR?" H 1950 1350 50  0001 C CNN
+F 1 "GND" H 1955 1427 50  0000 C CNN
+F 2 "" H 1950 1600 50  0001 C CNN
+F 3 "" H 1950 1600 50  0001 C CNN
+	1    1950 1600
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+12V #PWR?
+U 1 1 624AD85E
+P 1950 2050
+F 0 "#PWR?" H 1950 1900 50  0001 C CNN
+F 1 "+12V" H 1965 2223 50  0000 C CNN
+F 2 "" H 1950 2050 50  0001 C CNN
+F 3 "" H 1950 2050 50  0001 C CNN
+	1    1950 2050
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1950 1600 2800 1600
+Wire Wire Line
+	2800 1600 2800 1950
+Wire Wire Line
+	2800 1950 3800 1950
+Connection ~ 2800 1950
+Wire Wire Line
+	1950 2050 2800 2050
+Wire Wire Line
+	2800 2050 3800 2050
+Connection ~ 2800 2050
+Wire Wire Line
+	4700 2250 3800 2250
+Wire Wire Line
+	2800 2550 3150 2550
+Wire Wire Line
+	3150 2550 3150 2250
+Wire Wire Line
+	3150 2250 2800 2250
+Wire Wire Line
+	3800 2250 3800 2450
+Wire Wire Line
+	3800 2450 2800 2450
+Connection ~ 3800 2250
+Wire Wire Line
+	4700 2350 4700 2450
+Wire Wire Line
+	4700 2650 2800 2650
+Connection ~ 4700 2650
+Connection ~ 4700 2450
+Wire Wire Line
+	4700 2450 4700 2550
+Connection ~ 4700 2550
+Wire Wire Line
+	4700 2550 4700 2650
+$Comp
+L Sensor_Temperature:DS18B20 U?
+U 1 1 624B8BF6
+P 1800 5550
+F 0 "U?" H 1570 5596 50  0000 R CNN
+F 1 "DS18B20" H 1570 5505 50  0000 R CNN
+F 2 "Package_TO_SOT_THT:TO-92_Inline" H 800 5300 50  0001 C CNN
+F 3 "http://datasheets.maximintegrated.com/en/ds/DS18B20.pdf" H 1650 5800 50  0001 C CNN
+	1    1800 5550
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+3.3V #PWR?
+U 1 1 624BE3F6
+P 1800 5100
+F 0 "#PWR?" H 1800 4950 50  0001 C CNN
+F 1 "+3.3V" H 1815 5273 50  0000 C CNN
+F 2 "" H 1800 5100 50  0001 C CNN
+F 3 "" H 1800 5100 50  0001 C CNN
+	1    1800 5100
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R R1
+U 1 1 624C395E
+P 2250 5300
+F 0 "R1" H 2320 5346 50  0000 L CNN
+F 1 "4k7" H 2320 5255 50  0000 L CNN
+F 2 "" V 2180 5300 50  0001 C CNN
+F 3 "~" H 2250 5300 50  0001 C CNN
+	1    2250 5300
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2250 5450 2250 5550
+Wire Wire Line
+	2250 5150 1800 5150
+Wire Wire Line
+	1800 5100 1800 5150
+Connection ~ 1800 5150
+Wire Wire Line
+	1800 5150 1800 5250
+$Comp
+L Device:Rotary_Encoder_Switch SW?
+U 1 1 624C5D30
+P 1650 3550
+F 0 "SW?" V 1604 3780 50  0000 L CNN
+F 1 "Rotary_Encoder_Switch" V 1695 3780 50  0000 L CNN
+F 2 "" H 1500 3710 50  0001 C CNN
+F 3 "~" H 1650 3810 50  0001 C CNN
+	1    1650 3550
+	-1   0    0    1   
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 624CFD86
+P 1800 6000
+F 0 "#PWR?" H 1800 5750 50  0001 C CNN
+F 1 "GND" H 1805 5827 50  0000 C CNN
+F 2 "" H 1800 6000 50  0001 C CNN
+F 3 "" H 1800 6000 50  0001 C CNN
+	1    1800 6000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1800 5850 1800 6000
+Wire Wire Line
+	4700 3850 3650 3850
+Wire Wire Line
+	3650 3850 3650 5550
+Wire Wire Line
+	2100 5550 2250 5550
+Connection ~ 2250 5550
+Wire Wire Line
+	2250 5550 3650 5550
+$Comp
+L power:GND #PWR?
+U 1 1 624D2B5A
+P 1400 2900
+F 0 "#PWR?" H 1400 2650 50  0001 C CNN
+F 1 "GND" H 1405 2727 50  0000 C CNN
+F 2 "" H 1400 2900 50  0001 C CNN
+F 3 "" H 1400 2900 50  0001 C CNN
+	1    1400 2900
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1700 3250 1150 3250
+Wire Wire Line
+	1150 3250 1150 3450
+Wire Wire Line
+	1150 3450 1350 3450
+$Comp
+L pspice:CAP C?
+U 1 1 624D469C
+P 2300 3150
+F 0 "C?" V 1985 3150 50  0000 C CNN
+F 1 "CAP" V 2076 3150 50  0000 C CNN
+F 2 "" H 2300 3150 50  0001 C CNN
+F 3 "~" H 2300 3150 50  0001 C CNN
+	1    2300 3150
+	-1   0    0    1   
+$EndComp
+$Comp
+L pspice:CAP C?
+U 1 1 624D68EB
+P 2300 3800
+F 0 "C?" V 1985 3800 50  0000 C CNN
+F 1 "CAP" V 2076 3800 50  0000 C CNN
+F 2 "" H 2300 3800 50  0001 C CNN
+F 3 "~" H 2300 3800 50  0001 C CNN
+	1    2300 3800
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	2300 2900 1700 2900
+Wire Wire Line
+	1950 3450 2300 3450
+Wire Wire Line
+	2300 3450 2300 3400
+Wire Wire Line
+	1950 3650 1950 4050
+Wire Wire Line
+	1950 4050 2300 4050
+$Comp
+L power:GND #PWR?
+U 1 1 624DC2EB
+P 2750 3550
+F 0 "#PWR?" H 2750 3300 50  0001 C CNN
+F 1 "GND" H 2755 3377 50  0000 C CNN
+F 2 "" H 2750 3550 50  0001 C CNN
+F 3 "" H 2750 3550 50  0001 C CNN
+	1    2750 3550
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1700 2900 1700 3250
+Wire Wire Line
+	1400 2900 1700 2900
+Connection ~ 1700 2900
+Wire Wire Line
+	1950 3550 2300 3550
+Connection ~ 2300 3550
+Wire Wire Line
+	2300 3550 2750 3550
+Wire Wire Line
+	2300 4050 3400 4050
+Wire Wire Line
+	3400 4050 3400 3750
+Wire Wire Line
+	3400 3750 4700 3750
+Connection ~ 2300 4050
+Wire Wire Line
+	2300 2900 3400 2900
+Wire Wire Line
+	3400 2900 3400 3650
+Wire Wire Line
+	3400 3650 4700 3650
+Connection ~ 2300 2900
+$EndSCHEMATC
