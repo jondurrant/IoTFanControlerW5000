@@ -44,7 +44,6 @@ extern "C" {
 #include "MQTTAgent.h"
 #include "MQTTRouterPing.h"
 #include "MQTTRouterTwin.h"
-//#include "TCPTransport.h"
 
 // Fan Control Classes
 #include "StateExample.h"
@@ -71,8 +70,6 @@ extern "C" {
 /* Clock */
 #define PLL_SYS_KHZ (133 * 1000)
 
-/* Buffer */
-#define ETHERNET_BUF_MAX_SIZE (1024 * 2)
 
 /* Socket */
 #define SOCKET_DHCP 0
@@ -85,10 +82,11 @@ extern "C" {
 
 
 #ifndef MQTTHOST
-#define MQTTHOST "piudev2.local.jondurrant.com"
+//#define MQTTHOST "piudev2.local.jondurrant.com"
+#define MQTTHOST "mqtt.home"
 #define MQTTPORT 1883
-#define MQTTUSER "nob"
-#define MQTTPASSWD "nob"
+#define MQTTUSER "MAC"
+#define MQTTPASSWD "MAC"
 #endif
 
 
@@ -114,17 +112,7 @@ static uint8_t g_ethernet_buf[ETHERNET_BUF_MAX_SIZE] = {
 /* DHCP */
 static uint8_t g_dhcp_get_ip_flag = 0;
 
-/* DNS */
-static uint8_t g_dns_target_domain[] = "www.wiznet.io";
-static uint8_t g_mqtt_domain[] = "piudev2.local.jondurrant.com";
-static uint8_t g_dns_target_ip[4] = {
-    0,
-};
-static uint8_t g_dns_get_ip_flag = 0;
 
-/* Semaphore */
-//static xSemaphoreHandle dns_sem = NULL;
-static SemaphoreHandle_t dns_sem = NULL;
 
 /* Timer  */
 static volatile uint32_t g_msec_cnt = 0;
@@ -234,7 +222,7 @@ void debugTask(char * name, TaskHandle_t task){
 
 void doMQTT(){
 	//MQTTAgent agent(0, &gEth);
-	mqttAgent.credentials("nob", "nob", "nob");
+	mqttAgent.credentials(MQTTUSER, MQTTPASSWD);
 	mqttRouter.init(mqttAgent.getId(), &mqttAgent);
 
 	//Twin agent to manage the state
@@ -267,9 +255,7 @@ init_thread(void* pvParameters) {
 	char mqttUser[] = MQTTUSER;
 	char mqttPwd[] = MQTTPASSWD;
 	uint8_t ip[4];
-	uint8_t sntpSvr[] = {192, 168, 1, 20};//{80, 86, 38, 193};
 	bool retval;
-	char host[] = "nas3.local.jondurrant.com";
 
 	WatchdogBlinkAgent watchdog;
 	watchdog.start(tskIDLE_PRIORITY+1);
@@ -302,14 +288,11 @@ init_thread(void* pvParameters) {
 
 	doMQTT();
 
-	uint16_t count=0;
+	uint32_t count=0;
 	datetime_t xDate;
     for (;;){
     	vTaskDelay(1000);
 
-    	//LogInfo(("LedAgent=%d", ledAgent.getStakHighWater()));
-    	//debugTask("ledAgent", ledAgent.getTask());
-    	//vTaskPrioritySet( ledAgent.getTask(), 1);
     	/*
     	debugTask("ledAgent", ledAgent.getTask());
     	debugTask("watchdog", watchdog.getTask());
@@ -332,7 +315,7 @@ init_thread(void* pvParameters) {
     		//mqttAgent.start(tskIDLE_PRIORITY+1);//DHCP_TASK_PRIORITY);
     	} else {
 
-			if (count >= 300){
+			if (count >= 60*60*24){
 				count = 0;
 
 				if (gEth.dhcpClient()){

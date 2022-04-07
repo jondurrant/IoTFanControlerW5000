@@ -22,6 +22,7 @@ target_link_libraries(${NAME}
 	hardware_spi
 	hardware_dma
 	hardware_i2c
+	pico_unique_id
 	pico_ssd1306
 	ETHERNET_FILES
 #	SPI_FILES
