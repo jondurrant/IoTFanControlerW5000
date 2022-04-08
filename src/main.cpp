@@ -236,7 +236,7 @@ init_thread(void* pvParameters) {
 	bool retval;
 
 	WatchdogBlinkAgent watchdog;
-	watchdog.start(tskIDLE_PRIORITY+3);
+	watchdog.start(tskIDLE_PRIORITY+1);
 
 
 	if (!ledAgent.start(tskIDLE_PRIORITY+1)){
