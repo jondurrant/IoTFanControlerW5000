@@ -1,6 +1,8 @@
 /*
  * RotEncAgent.cpp
  *
+ * Rotary Encoder Switch Management
+ * Samples state at 2ms intervals
  *  Created on: 28 Mar 2022
  *      Author: jondurrant
  */
@@ -10,8 +12,18 @@
 #include "pico/time.h"
 #include <stdio.h>
 
+/***
+ * Used by callback static functions
+ */
 RotEncAgent * RotEncAgent::pSelf = NULL;
 
+/***
+ * Constructor
+ * @param pGP - GPIO pin for the push switch
+ * @param aGP - GPIO pin for RotEnc A
+ * @param bGP - GPIO pin for RotEnc B
+ * @param numTicks - numTicks in 360 rotation
+ */
 RotEncAgent::RotEncAgent(uint8_t pGP, uint8_t aGP, uint8_t bGP,
 		uint8_t numTicks) {
 	xPushGP = pGP;
@@ -48,10 +60,17 @@ RotEncAgent::RotEncAgent(uint8_t pGP, uint8_t aGP, uint8_t bGP,
 	xLast = (gpio_get(xBGP)) | xLast;
 }
 
+/***
+ * Destructor
+ */
 RotEncAgent::~RotEncAgent() {
-	// TODO Auto-generated destructor stub
+	// NOP
 }
 
+/***
+ *  create the vtask
+ *
+ *  */
 bool RotEncAgent::start(UBaseType_t priority){
 	BaseType_t xReturned;
 
@@ -66,7 +85,10 @@ bool RotEncAgent::start(UBaseType_t priority){
 	return (xReturned == pdPASS);
 }
 
-
+/***
+ * Internal function used by FreeRTOS to run the task
+ * @param pvParameters
+ */
 void RotEncAgent::vTask( void * pvParameters )
 {
     /* The parameter value is expected to be 1 as 1 is passed in the
@@ -77,6 +99,9 @@ void RotEncAgent::vTask( void * pvParameters )
 	task->run();
 }
 
+/***
+ * Internal function to run the task from within the object
+ */
 void RotEncAgent::run(){
 	for (;;){
 		poll();
@@ -85,6 +110,11 @@ void RotEncAgent::run(){
 
 }
 
+/***
+ * handle GPIO push switch events
+ * @param gpio - GPIO number
+ * @param events - Event
+ */
 void RotEncAgent::handleGPIO(uint gpio, uint32_t events){
 	if (gpio == xPushGP){
 		if ((events & GPIO_IRQ_EDGE_FALL) > 0){
@@ -108,6 +138,9 @@ void RotEncAgent::handleGPIO(uint gpio, uint32_t events){
 
 }
 
+/***
+ * Process short push
+ */
 void RotEncAgent::handleShortPress(){
 	//printf("Short Press\n");
 	if (pListener != NULL){
@@ -115,6 +148,9 @@ void RotEncAgent::handleShortPress(){
 	}
 }
 
+/***
+ * Process long press
+ */
 void RotEncAgent::handleLongPress(){
 	//printf("Long Press\n");
 	if (pListener != NULL){
@@ -122,6 +158,10 @@ void RotEncAgent::handleLongPress(){
 	}
 }
 
+/***
+ * Handle rotate
+ * @param clockwise - true if clockwise, otherwise counter
+ */
 void RotEncAgent::handleRotate(bool clockwise){
 	//printf("Long Press\n");
 	if (pListener != NULL){
@@ -129,12 +169,19 @@ void RotEncAgent::handleRotate(bool clockwise){
 	}
 }
 
+/***
+ * Static Call back function for push switch
+ * @param gpio
+ * @param events
+ */
 void RotEncAgent::gpioCallback (uint gpio, uint32_t events){
 	RotEncAgent::pSelf->handleGPIO(gpio, events);
 }
 
 
-
+/***
+ * poll the RotEnv status
+ */
 void RotEncAgent::poll(){
 	uint8_t c;
 	c = gpio_get(xAGP);
@@ -183,11 +230,18 @@ void RotEncAgent::poll(){
 
 }
 
-
+/***
+ * Get current position of RotEnv
+ * @return
+ */
 int8_t RotEncAgent::getPos(){
 	return xPos;
 }
 
+/***
+ * Set a single listener to RotEnv events
+ * @param listener
+ */
 void RotEncAgent::setListener(RotEncListener *listener){
 	pListener = listener;
 }

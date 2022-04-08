@@ -1,6 +1,8 @@
 /*
  * RGBLEDMgr.cpp
  *
+ * Bridge status to the LED
+ *
  *  Created on: 28 Nov 2021
  *      Author: jondurrant
  */
@@ -9,14 +11,24 @@
 #include <stdlib.h>
 #include "MQTTConfig.h"
 
+/***
+ * Constructor
+ * @param led - Led Agent
+ */
 RGBLEDMgr::RGBLEDMgr(RGBLEDAgent * led) {
 	pLed = led;
 }
 
+/***
+ * Destructor
+ */
 RGBLEDMgr::~RGBLEDMgr() {
 	// NOP
 }
 
+/***
+ * Notify MQTT is offline
+ */
 void RGBLEDMgr::MQTTOffline(){
 	if (pLed != NULL){
 
@@ -32,6 +44,9 @@ void RGBLEDMgr::MQTTOffline(){
 	LogDebug(("Offline"));
 }
 
+/***
+ * Notify MQTT is Online
+ */
 void RGBLEDMgr::MQTTOnline(){
 	if (pLed != NULL){
 		if (pLed->set(RGBModeOn,0, 0, 0xFF)){
@@ -45,6 +60,10 @@ void RGBLEDMgr::MQTTOnline(){
 	LogDebug(("Online"));
 }
 
+
+/***
+ * Notify data sent
+ */
 void RGBLEDMgr::MQTTSend(){
 	if (pLed != NULL){
 		if(!pLed->set(RGBModeOnce,0, 0, 0xFF)){
@@ -54,6 +73,9 @@ void RGBLEDMgr::MQTTSend(){
 	LogDebug(("Send"));
 }
 
+/***
+ * Notify data received
+ */
 void RGBLEDMgr::MQTTRecv(){
 	if (pLed != NULL){
 		if(!pLed->set(RGBModeOnce,0, 0, 0xFF)){
@@ -63,6 +85,11 @@ void RGBLEDMgr::MQTTRecv(){
 	LogDebug(("Recv"));
 }
 
+/***
+ * Set the Display Agent
+ * Allows OLED display to also know status
+ * @param disp
+ */
 void RGBLEDMgr::setDisplayAgent(DisplayAgent *disp){
 	pDisp = disp;
 }

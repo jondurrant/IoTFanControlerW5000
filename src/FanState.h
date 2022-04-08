@@ -95,7 +95,7 @@ public:
 
 
 	/***
-	 * Get Environment Temperature
+	 * Get Environment Temperature (DS18B20)
 	 * @return celsius
 	 */
 	float getEnvTemp();
@@ -126,20 +126,72 @@ public:
 	void updateClock();
 
 
+	/***
+	 * Get Current speed
+	 * @return percentage 0 to 100
+	 */
 	uint8_t getCurrentSpeed();
 
+	/***
+	 * Set Current Speed
+	 * @param percent: 0 to 100
+	 */
 	void setCurrentSpeed(uint8_t percent);
 
+	/***
+	 * Get Maximum speed to run at night
+	 * @return perecntage 0 to 100
+	 */
 	uint8_t getMaxNightSpeed();
 
+	/***
+	 * Set Maximum speed to run at night
+	 * @param percent - 0 to 100
+	 */
 	void setMaxNightSpeed(uint8_t percent);
 
+	/***
+	 * Get Temperate presets
+	 * When temp < t[0] speed is zero
+	 * When t[i] <= temp < t[i+1]: speed is speed[i[
+	 * When temp > t[2]: speed is speed[2]
+	 * @return uint8_t[3]
+	 */
 	const uint8_t * getPreTemp() const;
+
+	/***
+	 * Set Temperature presets
+	 * @param temps - uint8_t[3]
+	 */
 	void setPreTemp(uint8_t* temps);
+
+	/***
+	 * Set specific temp preset
+	 * @param temp - tempereature
+	 * @param preset - 0 to 2.
+	 */
 	void setPreTemp(uint8_t temp, uint8_t preset);
 
+	/***
+	 * Get preset speed
+	 * @return uintt_t[3], each value 0 to 100
+	 */
 	const uint8_t * getPreSpeed() const;
+
+	/***
+	 * Set preset speeds
+	 * When temp < t[0] speed is zero
+	 * When t[i] <= temp < t[i+1]: speed is speed[i[
+	 * When temp > t[2]: speed is speed[2]
+	 * @param speeds uint8_t[3] - each value 0 to 100
+	 */
 	void setPreSpeed(uint8_t* speeds);
+
+	/***
+	 * Set specific preset speed
+	 * @param speed - 0 to 100
+	 * @param preset 0 to 2
+	 */
 	void setPreSpeed(uint8_t speed, uint8_t preset);
 
 
@@ -265,9 +317,10 @@ private:
 	uint8_t xPreTemp[FAN_PRESETS];
 	uint8_t xPreSpeed[FAN_PRESETS];
 
+	//Environment temp read by DS18B20
 	float xEnvTemp = 0.0;
 
-
+	//Hardware interface
 	DS18B20 xDS18B20 ;
 
 	uint8_t xMin = 0;

@@ -50,12 +50,12 @@ extern "C" {
 #include "RGBLEDMgr.h"
 #include "FanController.h"
 #include "DisplayAgent.h"
-
 #include "RotEncAgent.h"
 #include "RotEncListener.h"
+
 /**
  * ----------------------------------------------------------------------------------------------------
- * Macros
+ * Definitions
  * ----------------------------------------------------------------------------------------------------
  */
 /* Task */
@@ -78,9 +78,7 @@ extern "C" {
 #define DNS_RETRY_COUNT 5
 
 
-
 #ifndef MQTTHOST
-//#define MQTTHOST "piudev2.local.jondurrant.com"
 #define MQTTHOST "mqtt.home.com"
 #define MQTTPORT 1883
 #define MQTTUSER "MAC"
@@ -94,51 +92,26 @@ extern "C" {
  * ----------------------------------------------------------------------------------------------------
  */
 /* Network */
-static wiz_NetInfo g_net_info =
-    {
-        .mac = {0x00, 0x08, 0xDC, 0x12, 0x34, 0x56}, // MAC address
-        .ip = {192, 168, 11, 2},                     // IP address
-        .sn = {255, 255, 255, 0},                    // Subnet Mask
-        .gw = {192, 168, 11, 1},                     // Gateway
-        .dns = {8, 8, 8, 8},                         // DNS server
-        .dhcp = NETINFO_DHCP                         // DHCP enable/disable
-};
 static uint8_t g_ethernet_buf[ETHERNET_BUF_MAX_SIZE] = {
     0,
 };
 
-/* DHCP */
-static uint8_t g_dhcp_get_ip_flag = 0;
-
-
-
-/* Timer  */
-static volatile uint32_t g_msec_cnt = 0;
-
-
-
+/*NTP Servers*/
 static const char *sntpHosts[5] = {
-		"nas3.local.jondurrant.com",
-		"nas3.local.jondurrant.com",
+		"mqtt.home.com",
+		"uk.pool.ntp.org",
 		"time.cloudflare.com",
 		"ntp2a.mcc.ac.uk",
 		"ntp2b.mcc.ac.uk"};
 
-
-char strBuf[2048];
-
 TaskHandle_t initHandle = NULL;
-
 
 //Global Twin Objects
 EthHelper gEth;
 MQTTAgent mqttAgent = MQTTAgent(3, &gEth);
 MQTTRouterTwin mqttRouter;
-//MQTTRouterPing mqttRouter;
-//StateExample state;
+
 FanState state;
-
-
 TwinTask xTwin;
 MQTTPingTask xPing;
 
@@ -162,15 +135,12 @@ RotEncListener rotEncListener;
 /* Clock */
 static void set_clock_khz(void);
 
-/* DHCP */
-static void wizchip_dhcp_init(void);
-static void wizchip_dhcp_assign(void);
-static void wizchip_dhcp_conflict(void);
 
-/* Timer  */
-static void repeating_timer_callback(void);
-
-
+/***
+ * Print status and stack usage of task
+ * @param name
+ * @param task
+ */
 void debugTask(char * name, TaskHandle_t task){
 	TaskStatus_t xTaskStatus;
 	char ready[]="eReady";
@@ -217,6 +187,14 @@ void debugTask(char * name, TaskHandle_t task){
 			);
 }
 
+
+/***
+ * Start up the MQTT components
+ * @param mqttTarget - Host of MQTT Hub
+ * @param mqttPort - Port number
+ * @param mqttUser - User
+ * @param mqttPwd - Password
+ */
 void doMQTT(char * mqttTarget, uint16_t mqttPort, char * mqttUser, char * mqttPwd){
 
 	mqttAgent.credentials(mqttUser, mqttPwd);
@@ -244,6 +222,10 @@ void doMQTT(char * mqttTarget, uint16_t mqttPort, char * mqttUser, char * mqttPw
 }
 
 
+/***
+ * Init thread to get everything going and check on status of network
+ * @param pvParameters
+ */
 void
 init_thread(void* pvParameters) {
 	char mqttTarget[] = MQTTHOST;
@@ -298,8 +280,8 @@ init_thread(void* pvParameters) {
     	debugTask("rotEncAgent", rotEncAgent.getTask());
     	*/
 
+    	//Check if network has failed
     	if (!gEth.isJoined()){
-    		//mqttAgent.stop();
     		dispAgent.noIP();
     		ledAgent.set(RGBModeOn,0xFF,0x0,0x0);
     		gEth.dhcpClient();
@@ -308,9 +290,9 @@ init_thread(void* pvParameters) {
 				gEth.getIPAddress(ip);
 				dispAgent.showIP(ip);
     		}
-    		//mqttAgent.start(tskIDLE_PRIORITY+1);//DHCP_TASK_PRIORITY);
     	} else {
 
+    		//Once a day renew the DHCP lease
 			if (count >= 60*60*24){
 				count = 0;
 
@@ -320,6 +302,7 @@ init_thread(void* pvParameters) {
 					printf("DHCP FAILED Renew\n");
 				}
 
+				//And update RTC
 				retval = gEth.syncRTCwithSNTP(sntpHosts, 5);
 				printf("SNTP: %s\n", retval?"Ok":"Fail");
 			}
@@ -327,9 +310,6 @@ init_thread(void* pvParameters) {
     	count ++;
 
     	if (count % 10 == 0){
-			rtc_get_datetime (&xDate);
-			printf("RTC: %d-%d-%d, %d:%d:%d\n", xDate.year, xDate.month, xDate.day, xDate.hour, xDate.min, xDate.sec);
-
 			state.updateClock();
     	}
     }
@@ -348,23 +328,25 @@ int main()
     stdio_init_all();
 
 
+    //3second wait to let serial stabalise for debug messages
+    sleep_ms(3000);
+
     if (watchdog_caused_reboot()){
     	printf("WATCHDOG REBOOTED\n");
     	sleep_ms(5000);
 
     }
 
-    sleep_ms(3000);
-
+    //Init ethernet before running up tasks
     gEth.rtcInit();
-
-    display.displayString("Hello","",2);
-
     gEth.init(g_ethernet_buf);
 
+    //Nice message on display why waiting for network
+    display.displayString("Hello","",2);
 
 
-	xTaskCreate(
+    //Launch Init task
+    xTaskCreate(
 		init_thread,
 		"Init task",
 		DHCP_TASK_STACK_SIZE,
@@ -374,6 +356,7 @@ int main()
 
     vTaskStartScheduler();
 
+    //Should never get here
     while (1)
     {
         ;

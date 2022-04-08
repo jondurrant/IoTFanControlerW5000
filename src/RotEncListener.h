@@ -1,6 +1,8 @@
 /*
  * RotEnvListener.h
  *
+ * Abstract listener for the RotEnc
+ *
  *  Created on: 24 Mar 2022
  *      Author: jondurrant
  */
@@ -12,13 +14,34 @@
 
 class RotEncListener {
 public:
+	/***
+	 * Constructor
+	 */
 	RotEncListener();
+
+	/***
+	 * Destructor
+	 */
 	virtual ~RotEncListener();
 
-	virtual void shortPress(void * rotEnv);
+	/***
+	 * Notify of short Press
+	 * @param rotEnv - Ref to RotEnc in case multiple being used
+	 */
+	virtual void shortPress(void * rotEnc);
 
-	virtual void longPress(void * rotEnv);
+	/***
+	 * Notify of long Press
+	 * @param rotEnv - Ref to RotEnc in case multiple being used
+	 */
+	virtual void longPress(void * rotEnc);
 
+	/***
+	 * Notification of rotation
+	 * @param clockwise - Direction. True if clockwise
+	 * @param pos - Current possition (within 360)
+	 * @param rotEnc - Ref to RotEnc in case multiple being used
+	 */
 	virtual void rotate(bool clockwise, int16_t pos, void * rotEnc);
 
 };

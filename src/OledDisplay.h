@@ -1,6 +1,8 @@
 /*
  * OledDisplay.h
  *
+ * Oled display driver
+ *
  *  Created on: 16 Mar 2022
  *      Author: jondurrant
  */
@@ -15,9 +17,24 @@ extern "C" {
 
 class OledDisplay {
 public:
+	/***
+	 * Constructor
+	 * @param sda - GP number for the SDA pin
+	 * @param sdl - GP number for the SDL pin
+	 */
 	OledDisplay(uint8_t sda, uint8_t sdl);
+
+	/***
+	 * Destructor
+	 */
 	virtual ~OledDisplay();
 
+	/***
+	 * Display two lines of string on the display
+	 * @param l1 = String 1 for top line
+	 * @param l2 - String 2 for the bottom line
+	 * @param scale - Scale size. tend to use 2
+	 */
 	void displayString(const char *l1, const char *l2, uint8_t scale=1);
 
 protected:

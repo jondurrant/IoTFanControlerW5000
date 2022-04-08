@@ -221,16 +221,31 @@ void FanState::setMaxNightSpeed(uint8_t percent){
 	}
 }
 
-
+/***
+ * Get Temperate presets
+ * When temp < t[0] speed is zero
+ * When t[i] <= temp < t[i+1]: speed is speed[i[
+ * When temp > t[2]: speed is speed[2]
+ * @return uint8_t[3]
+ */
 const uint8_t * FanState::getPreTemp() const{
 	return xPreTemp;
 }
 
+/***
+ * Set Temperature presets
+ * @param temps - uint8_t[3]
+ */
 void FanState::setPreTemp(uint8_t* temps){
 	memcpy(xPreTemp, temps, FAN_PRESETS);
 	setDirty(FAN_PRE_TEMP_SLOT);
 }
 
+/***
+ * Set specific temp preset
+ * @param temp - tempereature
+ * @param preset - 0 to 2.
+ */
 void FanState::setPreTemp(uint8_t temp, uint8_t preset){
 	if (preset < FAN_PRESETS){
 		xPreTemp[preset] = temp;
@@ -238,15 +253,31 @@ void FanState::setPreTemp(uint8_t temp, uint8_t preset){
 	}
 }
 
+/***
+ * Get preset speed
+ * @return uintt_t[3], each value 0 to 100
+ */
 const uint8_t * FanState::getPreSpeed() const{
 	return xPreSpeed;
 }
 
+/***
+ * Set preset speeds
+ * When temp < t[0] speed is zero
+ * When t[i] <= temp < t[i+1]: speed is speed[i[
+ * When temp > t[2]: speed is speed[2]
+ * @param speeds uint8_t[3] - each value 0 to 100
+ */
 void FanState::setPreSpeed(uint8_t* speeds){
 	memcpy(xPreSpeed, speeds, FAN_PRESETS);
 	setDirty(FAN_PRE_SPEED_SLOT);
 }
 
+/***
+ * Set specific preset speed
+ * @param speed - 0 to 100
+ * @param preset 0 to 2
+ */
 void FanState::setPreSpeed(uint8_t speed, uint8_t preset){
 	if (preset < FAN_PRESETS){
 		xPreSpeed[preset] = speed;

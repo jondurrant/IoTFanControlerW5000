@@ -1,6 +1,7 @@
 /*
  * OledDisplay.cpp
  *
+ * Oled display driver
  *  Created on: 16 Mar 2022
  *      Author: jondurrant
  */
@@ -8,6 +9,11 @@
 #include "OledDisplay.h"
 #include "string.h"
 
+/***
+* Constructor
+* @param sda - GP number for the SDA pin
+* @param sdl - GP number for the SDL pin
+*/
 OledDisplay::OledDisplay(uint8_t sda, uint8_t sdl) {
 	pI2C =  i2c0;
 
@@ -36,11 +42,19 @@ OledDisplay::OledDisplay(uint8_t sda, uint8_t sdl) {
 	ssd1306_show(&xDisp);
 }
 
+/***
+ * Destructor
+ */
 OledDisplay::~OledDisplay() {
-	// TODO Auto-generated destructor stub
+	//NOP
 }
 
-
+/***
+ * Display two lines of string on the display
+ * @param l1 = String 1 for top line
+ * @param l2 - String 2 for the bottom line
+ * @param scale - Scale size. tend to use 2
+ */
 void OledDisplay::displayString(const char *l1, const char *l2, uint8_t scale){
 
 	ssd1306_clear(&xDisp);

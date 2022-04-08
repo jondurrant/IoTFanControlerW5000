@@ -1,6 +1,8 @@
 /*
  * FanController.cpp
  *
+ * PWM Fan Controller
+ *
  *  Created on: 15 Mar 2022
  *      Author: jondurrant
  */
@@ -8,6 +10,12 @@
 #include "FanController.h"
 #include "hardware/pwm.h"
 
+
+/***
+ * Constructor
+ * @param state - State object used to find speed
+ * @param gp - GPIO number for PWM pin
+ */
 FanController::FanController(FanState *state, uint8_t gp) {
 	xPin = gp;
 	pState = state;
@@ -20,6 +28,9 @@ FanController::FanController(FanState *state, uint8_t gp) {
 	 pwm_set_gpio_level	(xPin,0);
 }
 
+/***
+ * Destructor
+ */
 FanController::~FanController() {
 	// TODO Auto-generated destructor stub
 }
