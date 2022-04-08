@@ -1,9 +1,5 @@
 add_executable(${NAME}
-#        w5x00_dhcp_dns.c
 		main.cpp
-#		test.cpp
-		ExampleAgentObserver.cpp
-		StateExample.cpp
 		FanState.cpp
 		RGBLEDMgr.cpp
 		FanController.cpp
@@ -11,9 +7,6 @@ add_executable(${NAME}
 		DisplayAgent.cpp
 		RotEncAgent.cpp
 		RotEncListener.cpp
-#		EthHelper.cpp
-#		TCPTransport.cpp
-#		MQTTAgent.cpp
         )
 
 # Pull in our pico_stdlib which pulls in commonly used features
@@ -25,7 +18,6 @@ target_link_libraries(${NAME}
 	pico_unique_id
 	pico_ssd1306
 	ETHERNET_FILES
-#	SPI_FILES
 	DHCP_FILES
 	DNS_FILES
 	SNTP_FILES

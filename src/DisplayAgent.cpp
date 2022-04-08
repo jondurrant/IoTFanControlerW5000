@@ -129,14 +129,18 @@ void DisplayAgent::run(){
     		case 20:
     		case 30:
     		case 40:
-    			sprintf(xBuf1,"%.1fC", xTemp);
-    			sprintf(xBuf2,"%d%%",  xSpeed);
     			if (pState != NULL) {
+					sprintf(xBuf1,"%.1fC", pState->getEnvTemp());
+					sprintf(xBuf2,"%d%%",  pState->getCurrentSpeed());
+
     				if (pState->getOverrideMinutes() > 0){
-    					sprintf(xBuf2,"%d%% OR",  xSpeed);
+    					sprintf(xBuf2,"%d%% OR",  pState->getCurrentSpeed());
     				}
+    				pDisplay->displayString(xBuf1,xBuf2, 2);
+    			} else {
+    				pDisplay->displayString("Missing","STATE", 2);
     			}
-    			pDisplay->displayString(xBuf1,xBuf2, 2);
+
     			break;
     		case 50:
     			if (xIP[0] == 0){
@@ -165,15 +169,6 @@ void DisplayAgent::run(){
     }
 }
 
-/***
- * Update display with current temperature and speed
- * @param temp in celcius
- * @param speed as percentage
- */
-void DisplayAgent::showTemp(float temp, uint8_t speed){
-	xTemp = temp;
-	xSpeed = speed;
-}
 
 /***
  * Show ip address
@@ -332,7 +327,7 @@ void DisplayAgent::displayState(RotEncEvent event){
 						pState->setOverrideMinutes(10);
 					}
 					pState->setCurrentSpeed(xEditValue);
-					pState->setOn(true);
+					pState->setOn(xEditValue > 0);
 					LogInfo(("Fan Speed Override %d = %d",xEditValue, pState->getCurrentSpeed()));
 					xStateItem += 100;
 					event = REENone;

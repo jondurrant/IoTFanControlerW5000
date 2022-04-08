@@ -46,7 +46,6 @@ extern "C" {
 #include "MQTTRouterTwin.h"
 
 // Fan Control Classes
-#include "StateExample.h"
 #include "FanState.h"
 #include "RGBLEDMgr.h"
 #include "FanController.h"
@@ -149,7 +148,7 @@ RGBLEDMgr   ledMgr = RGBLEDMgr(&ledAgent);
 OledDisplay display = OledDisplay(14, 15);
 DisplayAgent dispAgent = DisplayAgent(&display, &state, &gEth);
 
-FanController fanControl = FanController(&state, &dispAgent, 0);
+FanController fanControl = FanController(&state, 0);
 
 RotEncAgent rotEncAgent = RotEncAgent(12, 11, 10, 20);
 RotEncListener rotEncListener;

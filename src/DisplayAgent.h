@@ -50,13 +50,6 @@ public:
 	 */
 	virtual  bool start(UBaseType_t priority = tskIDLE_PRIORITY);
 
-	/***
-	 * Update display with current temperature and speed
-	 * @param temp in celcius
-	 * @param speed as percentage
-	 */
-	void showTemp(float temp, uint8_t speed);
-
 
 	/***
 	 * Show ip address
@@ -126,8 +119,6 @@ private:
 	OledDisplay *pDisplay = NULL;
 	EthHelper *pEth = NULL;
 
-	uint8_t xSpeed = 0;
-	float xTemp= 0.0;
 
 	uint8_t xIP[4];
 
