@@ -63,6 +63,11 @@ void FanState::calcSpeed(){
 	float t = getEnvTemp();
 	uint8_t speed = 0;
 
+	//if No presets do nothing
+	if (getPreTemp()[FAN_PRESETS-1] == 0){
+		return;
+	}
+
 	if (getOverrideMinutes()>0){
 		LogDebug(("Fan Speed is overriden"));
 		return;
@@ -191,6 +196,8 @@ void FanState::setCurrentSpeed(uint8_t percent){
 	if (percent <= 100){
 		xCSpeed = percent;
 		setDirty(FAN_CSPEED_SLOT);
+	} else {
+		LogError(("Fan Speed out of range: %d", percent));
 	}
 }
 

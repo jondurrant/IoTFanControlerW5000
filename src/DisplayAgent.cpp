@@ -1,6 +1,8 @@
 /*
  * DisplayAgent.cpp
  *
+ * Agent responsible for managing the OLED Display and triggering the RGB LED
+ *
  *  Created on: 16 Mar 2022
  *      Author: jondurrant
  */
@@ -13,7 +15,12 @@
 #include "hardware/rtc.h"
 
 
-
+/***
+ * Constructor
+ * @param d - OledDisplay that will talk to the hardware
+ * @param state - State object
+ * @param eth = Ethernet helper
+ */
 DisplayAgent::DisplayAgent(OledDisplay *d, FanState *state, EthHelper *eth) {
 	pDisplay = d;
 	pState = state;
@@ -21,10 +28,18 @@ DisplayAgent::DisplayAgent(OledDisplay *d, FanState *state, EthHelper *eth) {
 	noIP();
 }
 
+/***
+ * Destructor
+ */
 DisplayAgent::~DisplayAgent() {
-	// TODO Auto-generated destructor stub
+	// NOP
 }
 
+/***
+ * Creat the task
+ * @param priority
+ * @return true if sucessfull
+ */
 bool DisplayAgent::start(UBaseType_t priority){
 	BaseType_t xReturned;
 
@@ -150,20 +165,35 @@ void DisplayAgent::run(){
     }
 }
 
-
+/***
+ * Update display with current temperature and speed
+ * @param temp in celcius
+ * @param speed as percentage
+ */
 void DisplayAgent::showTemp(float temp, uint8_t speed){
 	xTemp = temp;
 	xSpeed = speed;
 }
 
+/***
+ * Show ip address
+ * @param ip uint8_t[4]
+ */
 void DisplayAgent::showIP(uint8_t *ip){
 	memcpy(xIP, ip, 4);
 }
 
+/***
+ * Show No IP address is currently available
+ */
 void DisplayAgent::noIP(){
 	memset(xIP, 0, 4);
 }
 
+/***
+ * RotEnc has had a short press event
+ * @param rotEnv
+ */
 void DisplayAgent::shortPress(void * rotEnv){
 	RotEncEvent event = REEShort;
 	if( xRotEnc != NULL ){
@@ -173,6 +203,10 @@ void DisplayAgent::shortPress(void * rotEnv){
 	}
 }
 
+/***
+ * RotEnv has had a long press event
+ * @param rotEnv
+ */
 void DisplayAgent::longPress(void * rotEnv){
 	RotEncEvent event = REELong;
 	if( xRotEnc != NULL ){
@@ -182,6 +216,12 @@ void DisplayAgent::longPress(void * rotEnv){
 	}
 }
 
+/***
+ * RotEnc has had a turn event
+ * @param clockwise
+ * @param pos
+ * @param rotEnc
+ */
 void DisplayAgent::rotate(bool clockwise, int16_t pos, void * rotEnc){
 	RotEncEvent event = REECW;
 	if (!clockwise){
@@ -194,6 +234,10 @@ void DisplayAgent::rotate(bool clockwise, int16_t pos, void * rotEnc){
 	}
 }
 
+/***
+ * Handle the display of state or edit of state
+ * @param event
+ */
 void DisplayAgent::displayState(RotEncEvent event){
 	datetime_t t;
 	char min[3];
@@ -283,7 +327,13 @@ void DisplayAgent::displayState(RotEncEvent event){
 				sprintf(xBuf1, "%d%%", xEditValue);
 				pDisplay->displayString("Edit Fan",xBuf1, 2);
 				if ((event == REEShort) || (event == REELong)){
+					//If no override in place then protect fan speed while we set override
+					if (pState->getOverrideMinutes() < 1){
+						pState->setOverrideMinutes(10);
+					}
 					pState->setCurrentSpeed(xEditValue);
+					pState->setOn(true);
+					LogInfo(("Fan Speed Override %d = %d",xEditValue, pState->getCurrentSpeed()));
 					xStateItem += 100;
 					event = REENone;
 					xEditValue = pState->getOverrideMinutes();
@@ -424,6 +474,13 @@ void DisplayAgent::displayState(RotEncEvent event){
 	}
 }
 
+/***
+ * Handle an edit request for a state item(xStateItem)
+ * @param event - type of RotEnv event
+ * @param min - minimum value of state item (xStateItem)
+ * @param max - maximum value of state item
+ * @param inc - increment on each turn, default is 1
+ */
 void DisplayAgent::doEdit(RotEncEvent event, int16_t min, int16_t max, int16_t inc){
 	if (event == REECW){
 		xEditValue += inc;
@@ -442,7 +499,10 @@ void DisplayAgent::doEdit(RotEncEvent event, int16_t min, int16_t max, int16_t i
 }
 
 
-
+/***
+ * MQTT session is online or offline
+ * @param b - true if online
+ */
 void DisplayAgent::online(bool b){
 	xOnline = b;
 }

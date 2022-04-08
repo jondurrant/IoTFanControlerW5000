@@ -47,7 +47,6 @@ extern "C" {
 
 // Fan Control Classes
 #include "StateExample.h"
-#include "ExampleAgentObserver.h"
 #include "FanState.h"
 #include "RGBLEDMgr.h"
 #include "FanController.h"
@@ -83,7 +82,7 @@ extern "C" {
 
 #ifndef MQTTHOST
 //#define MQTTHOST "piudev2.local.jondurrant.com"
-#define MQTTHOST "mqtt.home"
+#define MQTTHOST "mqtt.home.com"
 #define MQTTPORT 1883
 #define MQTTUSER "MAC"
 #define MQTTPASSWD "MAC"
@@ -141,7 +140,6 @@ MQTTRouterTwin mqttRouter;
 FanState state;
 
 
-ExampleAgentObserver agentObs;
 TwinTask xTwin;
 MQTTPingTask xPing;
 
@@ -220,9 +218,9 @@ void debugTask(char * name, TaskHandle_t task){
 			);
 }
 
-void doMQTT(){
-	//MQTTAgent agent(0, &gEth);
-	mqttAgent.credentials(MQTTUSER, MQTTPASSWD);
+void doMQTT(char * mqttTarget, uint16_t mqttPort, char * mqttUser, char * mqttPwd){
+
+	mqttAgent.credentials(mqttUser, mqttPwd);
 	mqttRouter.init(mqttAgent.getId(), &mqttAgent);
 
 	//Twin agent to manage the state
@@ -239,11 +237,10 @@ void doMQTT(){
 	mqttRouter.setPingTask(&xPing);
 
 	//Setup and start the mqttAgent
-	//mqttAgent.setObserver(&agentObs);
 	mqttAgent.setObserver(&ledMgr);
 	mqttAgent.setRouter(&mqttRouter);
 
-	mqttAgent.connect("piudev2.local.jondurrant.com", 3881, true, false);
+	mqttAgent.connect(mqttTarget, 1883, true, false);
 	mqttAgent.start(tskIDLE_PRIORITY+2);//DHCP_TASK_PRIORITY);
 }
 
@@ -258,7 +255,7 @@ init_thread(void* pvParameters) {
 	bool retval;
 
 	WatchdogBlinkAgent watchdog;
-	watchdog.start(tskIDLE_PRIORITY+1);
+	watchdog.start(tskIDLE_PRIORITY+3);
 
 
 	if (!ledAgent.start(tskIDLE_PRIORITY+1)){
@@ -272,7 +269,6 @@ init_thread(void* pvParameters) {
 	dispAgent.start(tskIDLE_PRIORITY+1);
 
 	rotEncAgent.setListener(&dispAgent);
-	//rotEncAgent.setListener(&rotEncListener);
 	rotEncAgent.start(tskIDLE_PRIORITY+1);
 
 	gEth.enableMutex();
@@ -281,12 +277,11 @@ init_thread(void* pvParameters) {
 	dispAgent.showIP(ip);
 	ledAgent.set(RGBModeOn,0xFF,0xCE,0x42);
 
-	//retval=gEth.syncRTCwithSNTP(sntpSvr);
 	gEth.setSNTPServers(sntpHosts, 5);
 	retval = gEth.syncRTCwithSNTP(sntpHosts, 5);
 	printf("SNTP Res: %s\n", retval?"Ok":"Fail");
 
-	doMQTT();
+	doMQTT(mqttTarget, mqttPort, mqttUser, mqttPwd);
 
 	uint32_t count=0;
 	datetime_t xDate;
@@ -309,9 +304,11 @@ init_thread(void* pvParameters) {
     		dispAgent.noIP();
     		ledAgent.set(RGBModeOn,0xFF,0x0,0x0);
     		gEth.dhcpClient();
-    		ledAgent.set(RGBModeOn,0xFF,0xCE,0x42);
-    		gEth.getIPAddress(ip);
-    		dispAgent.showIP(ip);
+    		if (gEth.isJoined()){
+				ledAgent.set(RGBModeOn,0xFF,0xCE,0x42);
+				gEth.getIPAddress(ip);
+				dispAgent.showIP(ip);
+    		}
     		//mqttAgent.start(tskIDLE_PRIORITY+1);//DHCP_TASK_PRIORITY);
     	} else {
 
@@ -325,7 +322,7 @@ init_thread(void* pvParameters) {
 				}
 
 				retval = gEth.syncRTCwithSNTP(sntpHosts, 5);
-				printf("SNTP HOST: %s\n", retval?"Ok":"Fail");
+				printf("SNTP: %s\n", retval?"Ok":"Fail");
 			}
     	}
     	count ++;

@@ -258,7 +258,7 @@ private:
 	bool xDay = true;
 
 	//Fan Speed
-	uint8_t xCSpeed = 0;
+	uint8_t xCSpeed = 100;
 	uint8_t xMSpeed = 100;
 
 	//Presets
